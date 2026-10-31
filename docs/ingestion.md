@@ -1,6 +1,6 @@
 # Ingestion — every job, where it runs, when
 
-Nine jobs are registered in `backend/ingestion/registry.py`. Each is an `IngestionJob`
+Eleven jobs are registered in `backend/ingestion/registry.py`. Each is an `IngestionJob`
 subclass in `backend/ingestion/jobs/<name>.py`; its module docstring describes the source,
 quirks and series ids. Run one by hand with:
 
@@ -21,10 +21,12 @@ interval.
 | `bb_workbook` | BB Monthly Economic Trends workbook (current issue) + the 1972–2024 historical workbook | ~500 macro series in `forex`, `monetary`, `external`, `fiscal`, `real`, `agri`, `industry`, `commodities` | daily 06:20 |
 | `bb_payments` | BB payment-systems monthly workbook: MFS, cards, internet/mobile banking, QR, agent banking | `payments.*` | daily 06:45 |
 | `bbs_cpi` | BBS CPI release page and monthly CPI workbook | `inflation.cpi.*` | daily 07:10 |
+| `btrc_telecom` | BTRC monthly mobile/internet subscribers, teledensity and tower tables | `telecom.*` | daily 09:40 |
 | `bbs_gdp` | BBS GDP release page and annual GDP workbook | `gdp.*` | daily 07:40 |
 | `bbs_census` | BBS Population & Housing Census 2022: one workbook per district (64) | `regional.census.*` with `dims.district` and `dims.division` | Sunday 03:20 |
 | `dse_market` | Dhaka Stock Exchange live snapshot, daily archive and instrument list | `market.dse.*`, `dse_indices`, `dse_prices`, `dse_securities` | Sun–Thu 16:30 |
 | `epb_exports` | Export Promotion Bureau monthly export summary workbook | `trade.exports.*` | daily 08:10 |
+| `tcb_prices` | TCB daily Dhaka retail-price workbook (essential commodities) | `prices.tcb.*` | daily 08:40 |
 | `derive_indicators` | Derived layer from official inputs (real call-money rate, real M2 growth, remittance growth, BDT depreciation) | `derived.*` | daily 10:00 |
 
 `bb_workbook` and `bb_web` overlap deliberately: the workbook gives long history and the

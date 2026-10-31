@@ -14,6 +14,8 @@ order: 1
 | NBR | Tax receipts | monthly | published through the BB statistical tables |
 | EPB | Export receipts by product | monthly | XLSX summary workbook |
 | DSE | Indices, turnover, listed instrument OHLCV | daily | public JSON API |
+| BTRC | Mobile/internet subscribers, teledensity, 3G/4G, tower counts | monthly | public HTML tables (Bengali labels) |
+| TCB | Dhaka daily essential-commodity retail prices | daily | XLSX per trading day |
 
 ## Rules
 

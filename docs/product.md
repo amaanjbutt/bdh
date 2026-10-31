@@ -33,8 +33,9 @@ database with JSON/CSV delivery, revision history and a free tier.
 | `real` | GDP current/constant, growth, per-capita income, crop area and production | BBS · BB | 1972 → |
 | `industry` | Monthly production of chemicals, fertiliser, textiles, steel, food, glass, matches, cigarettes | Bangladesh Bank | 2010 → |
 | `payments` | MFS accounts and transactions, cards, internet/mobile banking, QR, agent banking | Bangladesh Bank | 2020 → |
+| `telecom` | Mobile and internet subscribers, teledensity, mobile broadband, 3G/4G and operator tower counts | BTRC | 2021 → |
 | `market` | DSEX, DS30, DSES, turnover, volume, trades, market cap, 600+ instrument prices | DSE | 2025 → |
-| `commodities` | Gold, Brent, Dubai crude and Bangladesh Bank's retail price table | Bangladesh Bank | 2002 → |
+| `commodities` | Gold, Brent, Dubai crude and Bangladesh Bank's retail price table; TCB daily Dhaka essential-goods prices | Bangladesh Bank · TCB | 2002 → |
 | `agri` | Rice, wheat, jute, pulses, oilseeds, tea, sugarcane, cotton and tobacco area/production | Bangladesh Bank | 1990s → |
 | `social` | Population, labour, wage and social indicators from the BB workbook | Bangladesh Bank | 1973 → |
 | `regional` | Census 2022 population, households, age, education, work, housing, water, sanitation, fuel, religion, connectivity for all 64 districts | BBS | 2022 |

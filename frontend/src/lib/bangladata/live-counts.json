@@ -1,11 +1,11 @@
 {
-  "series": 3090,
+  "series": 3232,
   "funds": 0,
   "amcs": 0,
   "securities": 632,
   "modules": {
     "agri": 24,
-    "commodities": 30,
+    "commodities": 146,
     "external": 373,
     "fiscal": 17,
     "forex": 149,
@@ -17,8 +17,9 @@
     "rates": 24,
     "real": 111,
     "regional": 750,
-    "social": 231
+    "social": 231,
+    "telecom": 26
   },
-  "observations": 85904,
+  "observations": 88274,
   "generated_at": "2026-10-31"
 }

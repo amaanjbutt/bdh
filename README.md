@@ -73,8 +73,9 @@ cd frontend && npm run lint && npm run typecheck && npm run build
 | `real` | GDP current/constant, growth, per capita | BBS |
 | `industry` | Monthly production of chemicals, fertiliser, textiles, steel, food, glass, matches, cigarettes | Bangladesh Bank |
 | `payments` | MFS, cards, internet banking, QR, agent banking | Bangladesh Bank |
+| `telecom` | Mobile/internet subscribers, teledensity, 3G/4G, towers | BTRC |
 | `market` | DSEX/DS30/DSES, turnover, market cap, 600+ instruments | DSE |
-| `commodities` | Gold, Brent, Dubai crude and the BB retail price table | Bangladesh Bank |
+| `commodities` | Gold, Brent, Dubai crude, BB retail prices, TCB daily Dhaka prices | Bangladesh Bank · TCB |
 | `agri` | Crop area and production for rice, wheat, jute, pulses, tea, cotton, tobacco | Bangladesh Bank |
 | `social` | Wage Rate Index and social indicators | Bangladesh Bank |
 | `regional` | Census 2022 population, households, age, education, work, housing, water, sanitation, fuel, religion, connectivity | BBS |

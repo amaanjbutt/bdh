@@ -320,8 +320,9 @@ _MODULE_FEEDERS = {
     "market": ["dse_market"],
     "regional": ["bbs_census"],
     "industry": ["bb_workbook"],
+    "telecom": ["btrc_telecom"],
     "social": ["bb_workbook"],
-    "commodities": ["bb_workbook"],
+    "commodities": ["bb_workbook", "tcb_prices"],
     "agri": ["bb_workbook"],
 }
 _DATASET_FEEDERS = {

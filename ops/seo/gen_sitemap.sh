@@ -41,7 +41,7 @@ OUT="$PUB/sitemap-core.xml"
   echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
   for path in "" pricing coverage market districts topics derived calendar status about changelog docs \
               data/forex data/inflation data/rates data/monetary data/external data/fiscal data/real \
-              data/industry data/payments data/commodities data/agri data/social data/regional; do
+              data/industry data/payments data/telecom data/commodities data/agri data/social data/regional; do
     echo "  <url><loc>https://bangladatahub.com/${path}</loc><priority>0.8</priority></url>"
   done
   echo '</urlset>'

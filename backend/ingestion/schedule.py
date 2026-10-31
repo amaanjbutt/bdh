@@ -30,12 +30,16 @@ SCHEDULES: list[Schedule] = [
     Schedule("bb_workbook", {"hour": 6, "minute": 20}, expected_interval=timedelta(days=40), stale_on_run=True),
     # Digital finance / agent banking monthly workbook.
     Schedule("bb_payments", {"hour": 6, "minute": 45}, expected_interval=timedelta(days=40), stale_on_run=True),
+    # BTRC telecom subscribers, penetration and tower counts (monthly, table HTML).
+    Schedule("btrc_telecom", {"hour": 9, "minute": 40}, expected_interval=timedelta(days=40), stale_on_run=True),
     # BBS CPI release: check every morning; publish shortly after the monthly release.
     Schedule("bbs_cpi", {"hour": 7, "minute": 10}, expected_interval=timedelta(days=40), stale_on_run=True),
     # Annual/quarterly GDP: cheap monthly check.
     Schedule("bbs_gdp", {"hour": 7, "minute": 40}, expected_interval=timedelta(days=100), stale_on_run=True),
     # EPB monthly export summary (many product lines).
     Schedule("epb_exports", {"hour": 8, "minute": 10}, expected_interval=timedelta(days=40), stale_on_run=True),
+    # TCB daily Dhaka retail prices (10 recent workbooks; daily).
+    Schedule("tcb_prices", {"hour": 8, "minute": 40}, expected_interval=timedelta(days=7), stale_on_run=True),
     # Census 2022 district workbooks: one-off; monthly no-op check.
     Schedule("bbs_census", {"hour": 3, "minute": 20, "day_of_week": "sun"},
              expected_interval=timedelta(days=400), stale_on_run=True),

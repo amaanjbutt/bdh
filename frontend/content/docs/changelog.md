@@ -15,5 +15,7 @@ order: 2
 - Census 2022 district profiles
 - EPB product-level export receipts
 - DSE daily market and listed-instrument prices
+- BTRC monthly mobile/internet subscribers, teledensity and tower counts
+- TCB daily Dhaka retail prices for essential commodities
 - Bangladesh Bank digital payments and agent banking
 - Derived layer: real call-money rate, real M2 growth, remittance growth, BDT depreciation

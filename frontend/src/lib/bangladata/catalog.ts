@@ -81,6 +81,14 @@ export const MODULES: ModuleDef[] = [
     flagship: true,
   },
   {
+    slug: "telecom",
+    name: "Telecom",
+    line: "Mobile and internet subscribers, teledensity, mobile broadband, 3G/4G and operator tower counts",
+    cadence: "Monthly",
+    depth: "2021 →",
+    source: "BTRC",
+  },
+  {
     slug: "market",
     name: "Capital Markets",
     line: "DSEX, DS30, DSES, turnover, market capitalisation and every listed instrument's daily OHLCV",
@@ -192,15 +200,16 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
   real: 111,
   industry: 13,
   payments: 1217,
+  telecom: 26,
   market: 27,
-  commodities: 30,
+  commodities: 146,
   agri: 24,
   social: 231,
   regional: 750,
 };
 
 export const TOTAL_SERIES = Object.values(MODULE_SERIES_COUNTS).reduce((a, b) => a + b, 0);
-export const TOTAL_OBSERVATIONS = 85_904;
+export const TOTAL_OBSERVATIONS = 88_274;
 export const TOTAL_FUNDS = 0;
 
 export const PLANS: Plan[] = [
