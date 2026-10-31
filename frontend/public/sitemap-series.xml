@@ -48,7 +48,110 @@
   <url><loc>https://bangladatahub.com/series/derived.real_m2_growth</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/derived.remittances_growth_yoy</loc><lastmod>2026-09-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/derived.usd_bdt_depreciation_yoy</loc><lastmod>2021-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.day_peak_demand</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.day_peak_generation</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.barishal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.chattogram</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.cumilla</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.dhaka</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.khulna</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.mymensingh</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.rajshahi</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.rangpur</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.demand.sylhet</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.energy_demand</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.energy_generated</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.energy_unserved</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.evening_peak_demand</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.evening_peak_generation</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.gas_supplied</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.barishal.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.chattogram.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.cumilla.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.dhaka.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.khulna.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.mymensingh.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rajshahi.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.rangpur.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.coal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.gas</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.hfo</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.hsd</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.hydro</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.import</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.solar</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.generation.sylhet.wind</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.import_total</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.barishal</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.chattogram</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.cumilla</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.dhaka</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.khulna</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.mymensingh</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.rajshahi</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.rangpur</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.load_shed.sylhet</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.max_generation</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.min_generation</loc><lastmod>2026-10-28</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/energy.power.production_cost</loc><lastmod>2026-10-28</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.bop.capital_account_net</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/external.bop.current_account_balance</loc><lastmod>2020-12-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.bop.current_transfers_net_secondary_income_net_official</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.bop.current_transfers_net_secondary_income_net_private</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.bop.current_transfers_net_secondary_income_net_total</loc><lastmod>2021-05-01</lastmod></url>
@@ -65,12 +168,35 @@
   <url><loc>https://bangladatahub.com/series/external.bop.services_payments</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.bop.services_receipts</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.current_account</loc><lastmod>2020-12-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/external.exports</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/external.exports.goods</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/external.imports</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.customs</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.customs.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.customs_import_duty</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.customs_import_duty.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.excise</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.excise.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.export_duty</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.export_duty.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.income_tax</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.income_tax.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_customs</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_customs.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_local</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_local.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_revenue_receipts_forest_revenue</loc><lastmod>2021-02-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_revenue_receipts_land_revenue</loc><lastmod>2021-02-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_revenue_receipts_post_office_revenue</loc><lastmod>2021-02-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_revenue_receipts_registration</loc><lastmod>2021-02-01</lastmod></url>
-  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_taxes</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_taxes</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.other_taxes.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.regulatory_duty</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.regulatory_duty.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.supplementary_import</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.supplementary_import.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.supplementary_local</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.supplementary_local.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_revenue_receipts_under_nbr_customs_duty</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_revenue_receipts_under_nbr_excise_duty</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_revenue_receipts_under_nbr_export_duty</loc><lastmod>2021-05-01</lastmod></url>
@@ -79,7 +205,20 @@
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_revenue_receipts_under_nbr_supplementary_tax_import</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_revenue_receipts_under_nbr_vat_domestic</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_revenue_receipts_under_nbr_vat_import</loc><lastmod>2021-05-01</lastmod></url>
-  <url><loc>https://bangladatahub.com/series/fiscal.nbr.total</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_subtotal</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.tax_subtotal.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.total</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.total.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.travel_tax</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.travel_tax.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.turnover_tax</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.turnover_tax.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_import</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_import.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_local</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_local.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fx.rate.acu_dollar_end_period</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fx.rate.acu_dollar_period_average</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fx.rate.aud</loc><lastmod>2026-10-29</lastmod></url>
@@ -2129,6 +2268,9 @@
   <url><loc>https://bangladatahub.com/series/remittances.by_country.uae</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/remittances.by_country.uk</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/remittances.by_country.usa</loc><lastmod>2021-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/remittances.flow.million_us_10987_4</loc><lastmod>2021-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/remittances.flow.no_of_persons_427180</loc><lastmod>2021-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/remittances.flow.taka_in_crore_76010_83320000001</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/remittances.total</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/remittances.total.bdt</loc><lastmod>2026-09-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/remittances.total.usd</loc><lastmod>2026-09-01</lastmod></url>
@@ -2201,11 +2343,13 @@
   <url><loc>https://bangladatahub.com/series/trade.commodities.commodities_other_than_food_grains_textile_and_articles_thereof</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.commodities_other_than_food_grains_total_15_through_35</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.commodities_other_than_food_grains_total_imports</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/trade.commodities.commodities_other_than_food_grains_total_imports_37_14_36</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.commodities_other_than_food_grains_yarn</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.ferti_lizers</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.fish_and_shrimp</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.food_grains_rice</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.food_grains_total</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/trade.commodities.food_grains_total_14_12_13</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.food_grains_wheat</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.jute_goods_including_carpet</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/trade.commodities.leather</loc><lastmod>2021-05-01</lastmod></url>

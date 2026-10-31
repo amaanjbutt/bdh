@@ -32,10 +32,14 @@ SCHEDULES: list[Schedule] = [
     Schedule("bb_payments", {"hour": 6, "minute": 45}, expected_interval=timedelta(days=40), stale_on_run=True),
     # BTRC telecom subscribers, penetration and tower counts (monthly, table HTML).
     Schedule("btrc_telecom", {"hour": 9, "minute": 40}, expected_interval=timedelta(days=40), stale_on_run=True),
+    # BPDB/NLDC daily power-system summary (generation, demand, fuel mix, load-shed).
+    Schedule("bpdb_power", {"hour": 10, "minute": 10}, expected_interval=timedelta(days=3), stale_on_run=True),
     # BBS CPI release: check every morning; publish shortly after the monthly release.
     Schedule("bbs_cpi", {"hour": 7, "minute": 10}, expected_interval=timedelta(days=40), stale_on_run=True),
     # Annual/quarterly GDP: cheap monthly check.
     Schedule("bbs_gdp", {"hour": 7, "minute": 40}, expected_interval=timedelta(days=100), stale_on_run=True),
+    # NBR monthly revenue PDF (latest release; backfill reads older issues).
+    Schedule("nbr_revenue", {"hour": 8, "minute": 25}, expected_interval=timedelta(days=40), stale_on_run=True),
     # EPB monthly export summary (many product lines).
     Schedule("epb_exports", {"hour": 8, "minute": 10}, expected_interval=timedelta(days=40), stale_on_run=True),
     # TCB daily Dhaka retail prices (10 recent workbooks; daily).

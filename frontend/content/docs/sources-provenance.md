@@ -11,8 +11,9 @@ order: 1
 |---|---|---|---|
 | Bangladesh Bank | FX, reserves, remittances, rates, money, BOP, payments, statistical tables | daily / monthly | `bb.org.bd`; some file paths are F5-protected |
 | BBS | CPI, GDP, Census 2022, Wage Rate Index | monthly / annual / census | `bbs.gov.bd` + Oracle object storage |
-| NBR | Tax receipts | monthly | published through the BB statistical tables |
+| NBR | Tax receipts | monthly | PDF revenue-collection statement |
 | EPB | Export receipts by product | monthly | XLSX summary workbook |
+| BPDB / NLDC | Daily generation, demand, fuel mix, imports, load-shedding | daily | PDF System Summary Report |
 | DSE | Indices, turnover, listed instrument OHLCV | daily | public JSON API |
 | BTRC | Mobile/internet subscribers, teledensity, 3G/4G, tower counts | monthly | public HTML tables (Bengali labels) |
 | TCB | Dhaka daily essential-commodity retail prices | daily | XLSX per trading day |

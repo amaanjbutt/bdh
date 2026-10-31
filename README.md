@@ -74,6 +74,7 @@ cd frontend && npm run lint && npm run typecheck && npm run build
 | `industry` | Monthly production of chemicals, fertiliser, textiles, steel, food, glass, matches, cigarettes | Bangladesh Bank |
 | `payments` | MFS, cards, internet banking, QR, agent banking | Bangladesh Bank |
 | `telecom` | Mobile/internet subscribers, teledensity, 3G/4G, towers | BTRC |
+| `energy` | Daily generation, demand, fuel mix, imports, load-shedding | BPDB · NLDC |
 | `market` | DSEX/DS30/DSES, turnover, market cap, 600+ instruments | DSE |
 | `commodities` | Gold, Brent, Dubai crude, BB retail prices, TCB daily Dhaka prices | Bangladesh Bank · TCB |
 | `agri` | Crop area and production for rice, wheat, jute, pulses, tea, cotton, tobacco | Bangladesh Bank |

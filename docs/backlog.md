@@ -19,15 +19,22 @@ Open work, roughly in priority order.
    Still open: ARPU and cell-site counts (not on the same public tables).
 5. ~~**TCB daily retail prices.**~~ Done 2026-10-31: `tcb_prices` reads the daily Dhaka
    XLSX for 58 essential items (min/max, BDT per kg/litre/hali/tonne).
-6. **BERC / BPDB energy.** Tariffs, generation, demand. Start with the annual reports, then
-   the monthly dashboard if it is machine-readable.
-7. **NBR monthly revenue.** The current NBR series come from the BB workbook. Add the NBR
-   release page for the latest month and reconcile the overlap.
-8. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix
-   needs NBR/BB data. Scope the smallest useful table (top 50 products × 20 partners).
-9. **Mutual funds and DSE company fundamentals.** Not in scope for launch; the DSE feed
-   covers prices and indices only.
-10. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep
+6. **BERC / BPDB energy.** BPDB daily generation is done (`bpdb_power`). BERC's retail
+   tariff order is a scanned 30-page PDF with no text layer; it needs OCR plus a tariff-table
+   model before it can be published.
+7. **DAM daily prices.** The divisional PDFs exist, but their Bengali text extracts as
+   legacy-font mojibake and pdfplumber only recovers a handful of rows. OCR or a custom font
+   mapping is required; do not publish the current extraction.
+8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026
+   onwards). Older NBR PDFs use different templates and are rejected by the subtotal check.
+9. **BSEC mutual funds.** BSEC publishes the fund registry and prospectuses, not a central
+   daily NAV feed. NAVs are published by each AMC; a fund job needs a per-AMC source list
+   and a NAV parser before it can be complete.
+10. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix
+    needs NBR/BB data. Scope the smallest useful table (top 50 products × 20 partners).
+11. **Mutual funds and DSE company fundamentals.** Not in scope for launch; the DSE feed
+    covers prices and indices only.
+12. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep
     it a separate dimension so existing district queries do not change.
 
 ## Platform

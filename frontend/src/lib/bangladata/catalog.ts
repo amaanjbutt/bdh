@@ -89,6 +89,14 @@ export const MODULES: ModuleDef[] = [
     source: "BTRC",
   },
   {
+    slug: "energy",
+    name: "Energy & Power",
+    line: "Daily generation, demand, fuel mix by zone, cross-border imports and load-shedding",
+    cadence: "Daily",
+    depth: "2026 →",
+    source: "BPDB · NLDC",
+  },
+  {
     slug: "market",
     name: "Capital Markets",
     line: "DSEX, DS30, DSES, turnover, market capitalisation and every listed instrument's daily OHLCV",
@@ -196,11 +204,12 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
   rates: 24,
   monetary: 88,
   external: 267,
-  fiscal: 17,
+  fiscal: 48,
   real: 111,
   industry: 13,
   payments: 1298,
   telecom: 26,
+  energy: 102,
   market: 27,
   commodities: 146,
   agri: 24,
@@ -209,7 +218,7 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
 };
 
 export const TOTAL_SERIES = Object.values(MODULE_SERIES_COUNTS).reduce((a, b) => a + b, 0);
-export const TOTAL_OBSERVATIONS = 93_055;
+export const TOTAL_OBSERVATIONS = 95_325;
 export const TOTAL_FUNDS = 0;
 
 export const PLANS: Plan[] = [

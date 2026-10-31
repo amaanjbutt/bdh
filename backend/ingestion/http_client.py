@@ -65,7 +65,7 @@ _RELAY_HOSTS = [h.strip() for h in os.getenv("FETCH_RELAY_HOSTS", "pta.gov.pk").
 _INSECURE_HOSTS = [h.strip() for h in os.getenv(
     "INGEST_INSECURE_HOSTS",
     "bbs.gov.bd,old.dsebd.org,icbamcl.gov.bd,epb.gov.bd,tcb.gov.bd,"
-    "dam.gov.bd,btrc.gov.bd,berc.org.bd,mra.gov.bd,mof.gov.bd"
+    "dam.gov.bd,btrc.gov.bd,berc.org.bd,mra.gov.bd,mof.gov.bd,bpdb.gov.bd"
 ).split(",") if h.strip()]
 
 

@@ -12,10 +12,12 @@ from ingestion.jobs.bb_workbook import BbWorkbookJob
 from ingestion.jobs.bbs_census import BbsCensusJob
 from ingestion.jobs.bbs_cpi import BbsCpiJob
 from ingestion.jobs.bbs_gdp import BbsGdpJob
+from ingestion.jobs.bpdb_power import BpdbPowerJob
 from ingestion.jobs.btrc_telecom import BtrcTelecomJob
 from ingestion.jobs.derive_indicators import DeriveIndicatorsJob
 from ingestion.jobs.dse_market import DseMarketJob
 from ingestion.jobs.epb_exports import EpbExportsJob
+from ingestion.jobs.nbr_revenue import NbrRevenueJob
 from ingestion.jobs.tcb_prices import TcbPricesJob
 
 JOBS: dict[str, type[IngestionJob]] = {
@@ -25,9 +27,11 @@ JOBS: dict[str, type[IngestionJob]] = {
     BbsCpiJob.name: BbsCpiJob,
     BbsGdpJob.name: BbsGdpJob,
     BbsCensusJob.name: BbsCensusJob,
+    BpdbPowerJob.name: BpdbPowerJob,
     BtrcTelecomJob.name: BtrcTelecomJob,
     DseMarketJob.name: DseMarketJob,
     EpbExportsJob.name: EpbExportsJob,
+    NbrRevenueJob.name: NbrRevenueJob,
     TcbPricesJob.name: TcbPricesJob,
     DeriveIndicatorsJob.name: DeriveIndicatorsJob,
 }

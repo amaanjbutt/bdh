@@ -17,5 +17,7 @@ order: 2
 - DSE daily market and listed-instrument prices
 - BTRC monthly mobile/internet subscribers, teledensity and tower counts
 - TCB daily Dhaka retail prices for essential commodities
+- NBR monthly revenue: customs, VAT, income tax and components
+- BPDB/NLDC daily power generation, demand, fuel mix and load-shedding
 - Bangladesh Bank digital payments and agent banking
 - Derived layer: real call-money rate, real M2 growth, remittance growth, BDT depreciation
