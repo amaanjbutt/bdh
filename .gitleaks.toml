@@ -7,6 +7,7 @@ description = "Documented placeholder keys, public identifiers, real-publisher t
 regexTarget = "match"
 regexes = [
   '''pk_live_(x{3,}|\.\.\.|<[^>]*>|YOUR[A-Z_]*)''',
+  '''bd_live_(x{3,}|\.\.\.|<[^>]*>|YOUR[A-Z_]*)''',
   '''X-API-Key: \$\{?[A-Z_]+\}?''',
   # BB EasyData series identifiers ("easydata_key": "TS_GP_…") are catalogue ids, not credentials
   '''easydata_key"\s*:\s*"[A-Z0-9_.\-]+"''',

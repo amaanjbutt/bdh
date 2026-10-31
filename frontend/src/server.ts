@@ -50,7 +50,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
 // a fresh SSR that fans out to the VPS API on every load. Everything user-specific
 // or mutating is excluded.
 const CACHE_DENY = /^\/(dashboard|login|signup|welcome|auth|_serverFn|api)(\/|$)/;
-// Edge-cache strategy (the free-tier CPU fix). Crawlers hitting the ~17k-URL
+// Edge-cache strategy (the free-tier CPU fix). Crawlers hitting the ~2k-URL
 // sitemap generate the bulk of traffic; every cache MISS is a full SSR render, and
 // concurrent cold renders push some over the free tier's per-request CPU cap
 // ("CPU limit exceeded"). Two levers keep that under control WITHOUT a paid plan:
@@ -74,7 +74,7 @@ function cacheControlFor(url: URL): string {
 // One-off edge-cache bust after a site-wide change: only the listed path prefixes
 // get a new cache key (they re-render once, per-access, and re-cache); every other
 // URL keeps its existing entry, so we never trigger a mass cold-render storm. The
-// ~17k /series and /data landing pages are deliberately excluded (their nav being a
+// ~2k /series and /data landing pages are deliberately excluded (their nav being a
 // day stale is invisible; they self-refresh). Bump the version to bust again.
 //   v1 (2026-10-31): BanglaDataHub launch — Bangladesh Bank, BBS, NBR, EPB and DSE data,
 //   Census 2022 district profiles, DSE market explorer and market/topic pages.
