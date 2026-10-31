@@ -199,7 +199,7 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
   fiscal: 17,
   real: 111,
   industry: 13,
-  payments: 1217,
+  payments: 1298,
   telecom: 26,
   market: 27,
   commodities: 146,
@@ -209,7 +209,7 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
 };
 
 export const TOTAL_SERIES = Object.values(MODULE_SERIES_COUNTS).reduce((a, b) => a + b, 0);
-export const TOTAL_OBSERVATIONS = 88_274;
+export const TOTAL_OBSERVATIONS = 93_055;
 export const TOTAL_FUNDS = 0;
 
 export const PLANS: Plan[] = [

@@ -424,21 +424,36 @@
   <url><loc>https://bangladatahub.com/series/monetary.m2.net_foreign_assets_dmbs</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/monetary.m2.net_foreign_assets_total_1_2</loc><lastmod>2021-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/monetary.m2.total_domestic_credit_6_9_10</loc><lastmod>2021-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.agent_banking_account.agent_urban_2447</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.agent_banking_account.outlet_urban_2970</loc><lastmod>2025-06-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.atm_rural</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.atm_rural_3780</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.atm_total</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.atm_urban</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.atm_urban_9037</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.cdm_rural</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.cdm_total</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.cdm_urban</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.crm_rural</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.crm_rural_2652</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.crm_total</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.crm_total_9408</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.crm_urban</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.crm_urban_6756</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.pos_rural</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.pos_total</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.pos_urban</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.rtdm_rural</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.rtdm_total</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm_and_rtdm.rtdm_urban</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.atm_rural_3798</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.atm_urban_9016</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.cdm_rural</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.cdm_total</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.cdm_urban</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.crm_rural_2229</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.crm_total_7643</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.atm_pos_cdm_crm.crm_urban_5414</loc><lastmod>2025-06-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.balance.barishal_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.balance.barishal_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.balance.chattogram_rural</loc><lastmod>2026-08-01</lastmod></url>
@@ -459,12 +474,27 @@
   <url><loc>https://bangladatahub.com/series/payments.balance.total_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.balance.total_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_online_branches_rural</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_online_branches_rural_5194</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_online_branches_total</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_online_branches_urban</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_online_branches_urban_6246</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_sub_branches_rural</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_sub_branches_rural_2192</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_sub_branches_total</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_sub_branches_total_5028</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_sub_branches_urban</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.active_sub_branches_urban_2836</loc><lastmod>2026-06-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.branch_and_sub_branch.number_of_branches_in_abroad</loc><lastmod>2026-06-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.fully_online_rural_5172</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.fully_online_urban_6216</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.offline_rural</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.offline_total</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.offline_urban</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.partially_online_rural</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.partially_online_total</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.partially_online_urban</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.total_branch_rural_5172</loc><lastmod>2025-06-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.branch_statisitcs.total_branch_urban_6216</loc><lastmod>2025-06-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.cards_dist_by_currency.number_of_active_cards_credit_dual</loc><lastmod>2026-08-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.cards_dist_by_currency.number_of_active_cards_credit_international</loc><lastmod>2026-08-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.cards_dist_by_currency.number_of_active_cards_credit_local</loc><lastmod>2026-08-25</lastmod></url>
@@ -563,6 +593,7 @@
   <url><loc>https://bangladatahub.com/series/payments.district.coxsbazar</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.district.cumilla</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.district.dhaka</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.district.dhaka_1088_1043</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.district.dinajpur</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.district.faridpur</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.district.feni</loc><lastmod>2026-08-01</lastmod></url>
@@ -750,22 +781,33 @@
   <url><loc>https://bangladatahub.com/series/payments.issued_cards_dist_by_gender.number_of_issued_cards_prepaid_male</loc><lastmod>2026-08-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.issued_cards_dist_by_gender.number_of_issued_cards_prepaid_other</loc><lastmod>2026-08-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.barishal_rural</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.barishal_rural_9579</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.barishal_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.barishal_urban_4020</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.chattogram_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.chattogram_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.chattogram_urban_6247</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.dhaka_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.dhaka_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.dhaka_urban_9108</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.grand_total</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.khulna_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.khulna_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.khulna_urban_4779</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.mymensingh_rural</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.mymensingh_rural_4843</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.mymensingh_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.mymensingh_urban_2585</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.rajshahi_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.rajshahi_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.rajshahi_urban_5021</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.rangpur_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.rangpur_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.rangpur_urban_4911</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.sylhet_rural</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.sylhet_rural_6568</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.sylhet_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.loan_acct.sylhet_urban_1755</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.total_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_acct.total_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.loan_outstanding.barishal_rural</loc><lastmod>2026-08-01</lastmod></url>
@@ -790,15 +832,20 @@
   <url><loc>https://bangladatahub.com/series/payments.location.agents_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.agents_total</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.agents_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.location.agents_urban_2210</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.new_agents_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.new_agents_total</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.location.new_agents_total_1088</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.new_agents_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.new_outlets_rural</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.location.new_outlets_rural_1873</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.new_outlets_total</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.location.new_outlets_total_2313</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.new_outlets_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.outlets_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.outlets_total</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.location.outlets_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.location.outlets_urban_2730</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.matrix.abhoynagar</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.matrix.adamdighi</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.matrix.adarsha_sadar</loc><lastmod>2026-08-01</lastmod></url>
@@ -1372,22 +1419,51 @@
   <url><loc>https://bangladatahub.com/series/payments.mfs_part_4.talktime_purchase_number</loc><lastmod>2026-08-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.mfs_part_4.utility_bill_payment_amount</loc><lastmod>2026-08-25</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.mfs_part_4.utility_bill_payment_number</loc><lastmod>2026-08-25</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.eft_bangladesh_bank_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.eft_bangladesh_bank_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.eft_scheduled_bank_and_bsbl_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.eft_scheduled_bank_and_bsbl_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.micr_cheque_bangladesh_bank_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.micr_cheque_bangladesh_bank_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.micr_cheque_scheduled_bank_and_bsbl_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.micr_cheque_scheduled_bank_and_bsbl_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.non_micr_cheque_interbank_intrabank_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.non_micr_cheque_interbank_intrabank_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.rtgs_nbfi_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.rtgs_nbfi_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.rtgs_scheduled_bank_foreign_currency_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.rtgs_scheduled_bank_foreign_currency_number</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.rtgs_scheduled_bank_local_currency_amount</loc><lastmod>2025-07-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.micr_and_eft.rtgs_scheduled_bank_local_currency_number</loc><lastmod>2025-07-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.barishal_agent</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.barishal_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.barishal_outlet_1276</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.chattogram_agent</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.chattogram_agent_3037</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.chattogram_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.chattogram_outlet_4081</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.dhaka_agent</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.dhaka_agent_3520</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.dhaka_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.dhaka_outlet_4757</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.khulna_agent</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.khulna_agent_1757</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.khulna_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.khulna_outlet_2396</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.mymensingh_agent</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.mymensingh_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.mymensingh_outlet_1165</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.rajshahi_agent</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.rajshahi_agent_1708</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.rajshahi_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.rajshahi_outlet_2372</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.rangpur_agent</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.rangpur_agent_1319</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.rangpur_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.rangpur_outlet_2019</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.sylhet_agent</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.sylhet_outlet</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.outlet.sylhet_outlet_1181</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.total_agent</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.outlet.total_outlet</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.qr_transaction.internet_banking_of_which_bangla_qr_payments</loc><lastmod>2026-08-25</lastmod></url>
@@ -1541,7 +1617,9 @@
   <url><loc>https://bangladatahub.com/series/payments.types.total_a_c</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.types.total_balance</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.agents_rural</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.agents_rural_4629</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.agents_total</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.agents_total_5101</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.agents_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.amount_of_gross_transaction_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.amount_of_gross_transaction_total</loc><lastmod>2026-08-01</lastmod></url>
@@ -1567,8 +1645,11 @@
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.others_deposit_a_c_rural</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.others_deposit_a_c_total</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.others_deposit_a_c_urban</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.others_deposit_a_c_urban_3863</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.outlet_rural</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.outlet_rural_6310</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.outlet_total</loc><lastmod>2026-08-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.outlet_total_6932</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.outlet_urban</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.total_deposit_a_c_rural</loc><lastmod>2021-04-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/payments.ur_ru_abs.total_deposit_a_c_total</loc><lastmod>2020-12-01</lastmod></url>

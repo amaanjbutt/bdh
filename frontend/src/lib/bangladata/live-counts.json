@@ -1,5 +1,5 @@
 {
-  "series": 3232,
+  "series": 3313,
   "funds": 0,
   "amcs": 0,
   "securities": 632,
@@ -13,13 +13,13 @@
     "inflation": 36,
     "market": 27,
     "monetary": 88,
-    "payments": 1217,
+    "payments": 1298,
     "rates": 24,
     "real": 111,
     "regional": 750,
     "social": 231,
     "telecom": 26
   },
-  "observations": 88274,
+  "observations": 93055,
   "generated_at": "2026-10-31"
 }
