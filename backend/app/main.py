@@ -1,0 +1,114 @@
+from __future__ import annotations
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from app.api import (account, admin, auth, billing, calendar, catalog,
+                     market, regional, search, series, status, usage, webhooks)
+
+app = FastAPI(
+    title="BanglaDataHub API",
+    version="1.0.0",
+    description="Self-serve REST API for Bangladesh's official economic, financial and market data.",
+)
+
+app.include_router(catalog.router)
+app.include_router(market.router)
+app.include_router(regional.router)
+app.include_router(series.router)
+app.include_router(status.router)
+app.include_router(usage.router)
+app.include_router(billing.router)
+app.include_router(search.router)
+app.include_router(calendar.router)
+app.include_router(webhooks.router)
+app.include_router(account.router)
+app.include_router(admin.router)
+app.include_router(auth.router)
+
+
+@app.middleware("http")
+async def ratelimit_headers(request: Request, call_next):
+    import time
+
+    from app.services import metrics, reqlog
+
+    start = time.perf_counter()
+    ctx = reqlog.begin()
+    response = await call_next(request)
+    ms = (time.perf_counter() - start) * 1000
+    # Record real latency/availability for the status page (best-effort). Exclude
+    # /v1/status itself — its heavy aggregation query would skew its own p95.
+    path = request.url.path
+    if path.startswith("/v1/") and path != "/v1/status":
+        metrics.record(ms, response.status_code)
+    # Per-request log (endpoint, caller, status, latency) → Redis stream → api_requests.
+    reqlog.record(request, response, ms, ctx)
+    remaining = getattr(request.state, "ratelimit_remaining", None)
+    if remaining is not None:
+        response.headers["X-RateLimit-Remaining"] = str(remaining)
+        response.headers["X-RateLimit-Limit"] = str(
+            getattr(request.state, "ratelimit_limit", "")
+        )
+    return response
+
+# Map internal detail strings to the PRD error envelope (§6).
+_CODE_BY_STATUS = {
+    401: "unauthorized",
+    402: "subscription_inactive",
+    403: "tier_forbidden",
+    404: "not_found",
+    422: "invalid_params",
+    429: "rate_limited",
+}
+
+
+@app.exception_handler(StarletteHTTPException)
+def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    # An exception may carry an explicit `error_code` (e.g. credits_exhausted) to
+    # override the coarse status→code map; otherwise fall back to the status code.
+    code = getattr(exc, "error_code", None) or _CODE_BY_STATUS.get(exc.status_code, "error")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"success": False, "error": {"code": code, "message": str(exc.detail)}},
+        headers=getattr(exc, "headers", None),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=422,
+        content={
+            "success": False,
+            "error": {"code": "invalid_params", "message": str(exc.errors())},
+        },
+    )
+
+
+_INDEX = {
+    "success": True,
+    "name": "BanglaDataHub API",
+    "docs": "https://bangladatahub.com/docs",
+    "reference": "https://api.bangladatahub.com/docs",
+    "openapi": "https://api.bangladatahub.com/openapi.json",
+    "status": "https://api.bangladatahub.com/v1/status",
+    "get_a_key": "https://bangladatahub.com/signup",
+}
+
+
+@app.get("/", include_in_schema=False)
+@app.get("/v1", include_in_schema=False)
+@app.get("/v1/", include_in_schema=False)
+def index(request: Request):
+    """The bare host used to 404. A browser goes to the docs; an API client gets the links."""
+    if "text/html" in request.headers.get("accept", ""):
+        return RedirectResponse("https://bangladatahub.com/docs", status_code=302)
+    return _INDEX
+
+
+@app.get("/health", tags=["ops"])
+def health():
+    return {"status": "ok"}

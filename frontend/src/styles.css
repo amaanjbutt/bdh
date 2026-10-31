@@ -1,0 +1,401 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * PAKDATAHUB — "The Record"
+ *
+ * Ground alternation is the core mechanic: any element wrapped in
+ * `.ground-paper` or `.ground-ink` redefines the palette variables locally,
+ * so components only ever reference semantic tokens (bg-paper, text-ink,
+ * border-rule, text-seal, text-gilt) and adapt automatically — including in
+ * dark mode, where both grounds shift together.
+ *
+ * No shadows, no gradients, no blur. Separation is hairlines and space.
+ */
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-rule: var(--rule);
+  --color-seal: var(--seal);
+  --color-seal-tint: var(--seal-tint);
+  --color-seal-contrast: var(--seal-contrast);
+  --color-gilt: var(--gilt);
+  --color-flag: var(--flag);
+
+  /* shadcn compatibility layer — mapped onto the same palette */
+  --color-background: var(--paper);
+  --color-foreground: var(--ink);
+  --color-card: var(--paper);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--paper);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--seal);
+  --color-primary-foreground: var(--seal-contrast);
+  --color-secondary: var(--paper-sunk);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--paper-sunk);
+  --color-muted-foreground: var(--ink-soft);
+  --color-accent: var(--seal-tint);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--flag);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--rule);
+  --color-input: var(--rule);
+  --color-ring: var(--seal);
+  --color-ring-offset-background: var(--paper);
+
+  --font-display: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
+  --radius-4xl: 2px;
+  --radius: 2px;
+}
+
+:root,
+.ground-paper {
+  --paper: #fbfbf9;
+  --paper-sunk: #f2f3ef;
+  --ink: #101418;
+  --ink-soft: #5a625e;
+  --rule: #dedfd8;
+  --seal: #14503c;
+  --seal-tint: #e8efea;
+  --seal-contrast: #fbfbf9;
+  --gilt: #8a6d1f;
+  --flag: #9b2c2c;
+}
+
+.ground-ink {
+  --paper: #101418;
+  --paper-sunk: #171c1f;
+  --ink: #f2f3ef;
+  --ink-soft: #98a09b;
+  --rule: #262b29;
+  --seal: #4e9c7c;
+  --seal-tint: #16241f;
+  --seal-contrast: #101418;
+  --gilt: #b08d2e;
+  --flag: #d76b6b;
+}
+
+.dark,
+.dark .ground-paper {
+  --paper: #0b0e10;
+  --paper-sunk: #13171a;
+  --ink: #edeee9;
+  --ink-soft: #8c948f;
+  --rule: #242927;
+  --seal: #4e9c7c;
+  --seal-tint: #14231e;
+  --seal-contrast: #0b0e10;
+  --gilt: #b08d2e;
+  --flag: #d76b6b;
+}
+
+.dark .ground-ink {
+  --paper: #05070800;
+  --paper: #060809;
+  --paper-sunk: #0f1315;
+  --ink: #f2f3ef;
+  --ink-soft: #8c948f;
+  --rule: #1f2422;
+  --seal: #4e9c7c;
+  --seal-tint: #0f1a17;
+  --seal-contrast: #060809;
+  --gilt: #b08d2e;
+  --flag: #d76b6b;
+}
+
+@layer base {
+  * {
+    border-color: var(--rule);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    /* Guard against stray horizontal page scroll on mobile (tape/code blocks
+       still scroll inside their own overflow-x containers). `clip` doesn't
+       create a scroll box, so sticky/fixed children keep working. */
+    overflow-x: clip;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.03;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--seal);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--seal);
+    color: var(--seal-contrast);
+  }
+}
+
+/* Every numeral on the site is mono, tabular, and sits on a hairline baseline. */
+@utility num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.01em;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+@utility wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+@utility hairline-t {
+  border-top: 1px solid var(--rule);
+}
+
+@utility panel-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--paper);
+  color: var(--ink);
+}
+
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .snap-root {
+    scroll-snap-type: y proximity;
+  }
+
+  .snap-panel {
+    scroll-snap-align: start;
+  }
+}
+
+@media (max-width: 1023px) {
+  .panel-shell {
+    min-height: 0;
+    padding-block: 4.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@keyframes draw-stroke {
+  from {
+    stroke-dashoffset: var(--dash);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.draw-in {
+  animation: draw-stroke 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Top-of-page bar while a client-side navigation loads (nav.tsx → RouteProgress). It eases
+   towards the end and never quite arrives; it disappears when the page is ready. */
+.route-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 70;
+  height: 2px;
+  width: 100%;
+  background: var(--seal);
+  transform-origin: left;
+  animation: route-progress 8s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+}
+
+@keyframes route-progress {
+  from {
+    transform: scaleX(0.05);
+  }
+  to {
+    transform: scaleX(0.92);
+  }
+}
+
+/* Rendered markdown (docs, blog). First-party content, so raw HTML is trusted. */
+.doc-prose {
+  max-width: 720px;
+}
+.doc-prose h1 {
+  font-size: 40px;
+  line-height: 1.05;
+  margin-bottom: 0.5em;
+}
+.doc-prose h2 {
+  font-size: 24px;
+  margin-top: 1.7em;
+  margin-bottom: 0.4em;
+}
+.doc-prose h3 {
+  font-size: 18px;
+  margin-top: 1.3em;
+  margin-bottom: 0.3em;
+}
+.doc-prose p {
+  margin: 0.9em 0;
+  line-height: 1.7;
+}
+.doc-prose a {
+  color: var(--seal);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.doc-prose ul {
+  list-style: disc;
+  padding-left: 1.4em;
+  margin: 0.9em 0;
+}
+.doc-prose li {
+  margin: 0.3em 0;
+}
+.doc-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--paper-sunk);
+  padding: 0.12em 0.35em;
+}
+.doc-prose pre {
+  /* Code reads as "product" on an ink ground (fixed colors: markdown can't swap grounds). */
+  position: relative;
+  font-family: var(--font-mono);
+  background: #101418;
+  color: #e7e9e4;
+  border: 1px solid #262b29;
+  padding: 1.1em 1.2em;
+  padding-right: 4.5em;
+  overflow-x: auto;
+  margin: 1.2em 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.doc-prose .code-copy {
+  position: absolute;
+  top: 0.55em;
+  right: 0.55em;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: #98a09b;
+  border: 1px solid #262b29;
+  background: #171c1f;
+  padding: 0.2em 0.6em;
+  cursor: pointer;
+}
+.doc-prose .code-copy:hover {
+  color: #f2f3ef;
+  border-color: #4e9c7c;
+}
+.doc-prose h1,
+.doc-prose h2,
+.doc-prose h3 {
+  scroll-margin-top: 96px;
+}
+.doc-prose .heading-anchor {
+  float: left;
+  margin-left: -1.1em;
+  width: 1.1em;
+  color: var(--ink-soft);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+.doc-prose h2:hover .heading-anchor,
+.doc-prose h3:hover .heading-anchor {
+  opacity: 1;
+}
+.doc-prose ol {
+  list-style: decimal;
+  padding-left: 1.4em;
+  margin: 0.9em 0;
+}
+.doc-prose blockquote.callout {
+  margin: 1.2em 0;
+  padding: 0.6em 1em;
+  border-left: 3px solid var(--gilt);
+  background: var(--paper-sunk);
+}
+.doc-prose blockquote.callout p {
+  margin: 0.4em 0;
+}
+.doc-prose .table-wrap {
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+.doc-prose .table-wrap table {
+  margin: 0;
+}
+.doc-prose td code {
+  white-space: nowrap;
+}
+.doc-prose pre code {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+.doc-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.2em 0;
+  font-size: 14px;
+}
+.doc-prose th,
+.doc-prose td {
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  padding: 0.5em 0.75em;
+}
+.doc-prose th {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-soft);
+}

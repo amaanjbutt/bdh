@@ -1,0 +1,108 @@
+# Production stack on the VPS (/opt/bangladata is a git checkout of main; deploys run
+# ops/deploy/deploy.sh). The frontend lives on Cloudflare Workers, so this box runs only the
+# API + data plane. Postgres data is bind-mounted to /var/lib/bangladata/pgdata (not a named
+# volume) and published on 127.0.0.1:5432 only. Only Caddy is public (80/443).
+#
+#   docker compose -f docker-compose.server.yml up -d --build api scheduler
+#
+# `name:` pins the project to "bangladata" so container names (bangladata-db-1, ...) never change.
+name: bangladata
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bangladata
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: bangladata
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - /var/lib/bangladata/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bangladata"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql://bangladata:${POSTGRES_PASSWORD}@db:5432/bangladata
+      REDIS_URL: redis://redis:6379/0
+      RAW_ARCHIVE_DIR: /data/raw
+      PUBLIC_BASE_URL: https://bangladatahub.com
+      INGEST_PROXY: ${INGEST_PROXY:-}
+      INGEST_PROXY_HOSTS: ${INGEST_PROXY_HOSTS:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - rawdata:/data/raw
+    restart: unless-stopped
+
+  scheduler:
+    build: ./backend
+    command: python -m ingestion.scheduler
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql://bangladata:${POSTGRES_PASSWORD}@db:5432/bangladata
+      REDIS_URL: redis://redis:6379/0
+      RAW_ARCHIVE_DIR: /data/raw
+      INGEST_PROXY: ${INGEST_PROXY:-}
+      INGEST_PROXY_HOSTS: ${INGEST_PROXY_HOSTS:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - rawdata:/data/raw
+    restart: unless-stopped
+
+  # Nightly pg_dump -Fc to ./backups (keep 14), each verified by a scratch restore.
+  backup:
+    image: postgres:16
+    environment:
+      PGHOST: db
+      PGUSER: bangladata
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: bangladata
+    volumes:
+      - ./backups:/backups
+      - ./backend/scripts:/scripts:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/scripts/backup_loop.sh"]
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    volumes:
+      - ./ops/caddy/Caddyfile.api:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  rawdata:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,24 @@
+{
+  "series": 3090,
+  "funds": 0,
+  "amcs": 0,
+  "securities": 632,
+  "modules": {
+    "agri": 24,
+    "commodities": 30,
+    "external": 373,
+    "fiscal": 17,
+    "forex": 149,
+    "industry": 13,
+    "inflation": 36,
+    "market": 27,
+    "monetary": 88,
+    "payments": 1217,
+    "rates": 24,
+    "real": 111,
+    "regional": 750,
+    "social": 231
+  },
+  "observations": 85904,
+  "generated_at": "2026-10-31"
+}

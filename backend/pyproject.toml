@@ -1,0 +1,48 @@
+[project]
+name = "bangladata-api"
+version = "1.0.0"
+description = "Self-serve REST API for Bangladeshi financial & economic data"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "psycopg[binary]>=3.1",
+    "psycopg-pool>=3.2",
+    "httpx>=0.27",
+    "beautifulsoup4>=4.12",
+    "lxml>=5.2",
+    "redis>=5.0",
+    "pdfplumber>=0.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "httpx>=0.27",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app", "app.api", "app.billing", "app.services", "ingestion", "ingestion.jobs", "db", "scripts"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 130
+extend-exclude = ["scripts/archive"]
+
+[tool.ruff.lint]
+# Real-bug rules only (syntax errors, undefined names, unused imports, duplicate keys…). The codebase
+# has its own layout style, so the formatter is not enforced.
+select = ["E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# pytest fixtures are imported into test modules and then shadowed by parameters
+"tests/*" = ["F811"]

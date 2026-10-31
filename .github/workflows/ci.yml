@@ -1,0 +1,120 @@
+name: CI
+# Every push and PR: backend lint + tests (real Postgres/Redis), repo consistency, frontend lint/typecheck/build,
+# secret scan, workflow lint. Nothing deploys from here (deploys cost Actions minutes): after a merge, run
+# ops/deploy/deploy_from_pc.sh on the owner's PC — it refuses a commit whose CI isn't green.
+# docs/operations.md → "Deploy".
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pull-requests: read   # dorny/paths-filter lists a PR's changed files through the API
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ github.event_name == 'workflow_dispatch' || steps.f.outputs.backend == 'true' }}
+      frontend: ${{ github.event_name == 'workflow_dispatch' || steps.f.outputs.frontend == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: f
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'ops/**'
+              - 'docs/ingestion.md'
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/**'
+
+  backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: bangladata
+          POSTGRES_PASSWORD: bangladata
+          POSTGRES_DB: bangladata
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bangladata" --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      DATABASE_URL: postgresql://bangladata:bangladata@localhost:5432/bangladata
+      REDIS_URL: redis://localhost:6379/0
+      RAW_ARCHIVE_DIR: /tmp/raw
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install
+        run: pip install -q -r requirements.txt ruff==0.14.10
+      - name: Lint (ruff — real-bug rules)
+        run: ruff check .
+      - name: Repo consistency (registry, schedules, workflows, job catalogue)
+        run: python -m scripts.check_repo
+      - name: Schema + seeds apply cleanly, twice (idempotent)
+        run: python -m db.init && python -m db.init
+      - name: Tests
+        run: python -m pytest -q -o addopts='' -rfE --durations=15
+
+  frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Build (also regenerates docs, llms.txt, sitemaps)
+        run: npm run build
+
+  repo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan (gitleaks, full history)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks git . --config .gitleaks.toml --redact --no-banner -v
+      - name: Workflow lint (actionlint)
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -shellcheck= -pyflakes= \
+            .github/workflows/*.yml

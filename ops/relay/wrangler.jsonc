@@ -1,0 +1,9 @@
+// The ingestion fetch relay (see worker.js). Its own worker — never part of the website worker.
+// Secret: `npx wrangler secret put RELAY_KEY` (value in secrets.md). Deploy: ops/deploy/deploy_from_pc.sh relay
+{
+  "name": "bangladata-relay",
+  "main": "worker.js",
+  "compatibility_date": "2026-08-20",
+  "workers_dev": true,
+  "observability": { "enabled": false }
+}

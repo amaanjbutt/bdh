@@ -1,0 +1,24 @@
+# Secret scan config (CI: gitleaks over the full git history). Defaults + known false positives.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented placeholder keys, public identifiers, real-publisher test fixtures"
+regexTarget = "match"
+regexes = [
+  '''pk_live_(x{3,}|\.\.\.|<[^>]*>|YOUR[A-Z_]*)''',
+  '''X-API-Key: \$\{?[A-Z_]+\}?''',
+  # BB EasyData series identifiers ("easydata_key": "TS_GP_…") are catalogue ids, not credentials
+  '''easydata_key"\s*:\s*"[A-Z0-9_.\-]+"''',
+  '''TS_[A-Z]{2}_[A-Z0-9_]+\.[A-Z0-9_]+''',
+]
+# The IndexNow ownership key is public by design (served at https://bangladatahub.com/<key>.txt)
+stopwords = ["330ad0ec44a194f9505e064e70fafabb"]
+paths = [
+  # the owner's production secrets file (decision 2026-10-26) — private monorepo only; the scan still
+  # covers everything else, including backend/, which is published to the public ingestion repo
+  '''^secrets\.md$''',
+  '''backend/tests/fixtures/''',
+  # archived API reference: curl examples with placeholder keys spread over several lines
+  '''docs/archive/api-docs-2026-10-17\.md''',
+]

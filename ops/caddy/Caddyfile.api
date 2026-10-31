@@ -1,0 +1,10 @@
+# Backend-only Caddy config: auto-HTTPS for the API subdomain.
+# The frontend (bangladatahub.com) is served by Cloudflare, not this box.
+{
+	email {$ACME_EMAIL}
+}
+
+api.bangladatahub.com {
+	encode zstd gzip
+	reverse_proxy api:8000
+}

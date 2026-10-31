@@ -1,0 +1,4 @@
+# /root/.ssh/authorized_keys on the VPS — the CD key may ONLY run the deploy script
+# (forced command; the requested sha arrives in SSH_ORIGINAL_COMMAND). No shell, no
+# forwarding, no pty.
+command="/bin/bash /opt/bangladata/ops/deploy/deploy.sh",restrict ssh-ed25519 AAAA...public-key... bangladata-cd

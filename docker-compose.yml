@@ -1,0 +1,84 @@
+# Local development / test stack.
+#   docker compose up -d db redis                  # what the tests need
+#   docker compose up -d                           # + the API on http://localhost:8000
+#   docker compose --profile scheduler up -d       # + the job scheduler
+#   docker compose --profile backup up -d backup   # + nightly dumps into ./local/db-dumps
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bangladata
+      POSTGRES_PASSWORD: bangladata
+      POSTGRES_DB: bangladata
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bangladata"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  api:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://bangladata:bangladata@db:5432/bangladata
+      REDIS_URL: redis://redis:6379/0
+      RAW_ARCHIVE_DIR: /data/raw
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - rawdata:/data/raw
+
+  scheduler:
+    profiles: ["scheduler"]
+    build: ./backend
+    command: python -m ingestion.scheduler
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://bangladata:bangladata@db:5432/bangladata
+      REDIS_URL: redis://redis:6379/0
+      RAW_ARCHIVE_DIR: /data/raw
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - rawdata:/data/raw
+    restart: unless-stopped
+
+  backup:
+    profiles: ["backup"]
+    image: postgres:16
+    environment:
+      PGHOST: db
+      PGUSER: bangladata
+      PGPASSWORD: bangladata
+      PGDATABASE: bangladata
+    volumes:
+      - ./local/db-dumps:/backups
+      - ./backend/scripts:/scripts:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/scripts/backup_loop.sh"]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  rawdata:

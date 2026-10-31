@@ -1,0 +1,11 @@
+// Merged by nitro into .output/server/wrangler.json at build time (cloudflare-module preset).
+// - name: without it nitro derives one from the git remote ("amaanjbutt-bangladata-frontend"), and
+//   `wrangler deploy` would create a second worker instead of updating the live `bangladatahub`.
+// - compatibility_date: vite writes today's date, which wrangler can reject as "in the future";
+//   pinning it here replaces the old sed step.
+// Worker variables (PAKDATA_API_BASE, PAKDATA_PUBLIC_API_BASE, PAKDATA_API_KEY) live in the
+// Cloudflare dashboard, not here.
+{
+  "name": "bangladatahub",
+  "compatibility_date": "2026-08-20"
+}
