@@ -45,6 +45,7 @@ Durable knowledge only. Live state comes from the system itself (`/v1/status`,
 | [`decisions.md`](./decisions.md) | Dated decisions — don't reopen them |
 | [`backlog.md`](./backlog.md) | Open work, prioritised |
 | [`history/2026-11-01-cloudflare-deployment.md`](./history/2026-11-01-cloudflare-deployment.md) | Full build log of the Cloudflare migration, failures and current state |
+| [`history/README.md`](./history/README.md) | Index of dated migration/incident records |
 
 ## Code-level guides
 
