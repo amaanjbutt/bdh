@@ -8,10 +8,12 @@ quirks and series ids. Run one by hand with:
 docker compose exec api python -m ingestion.run <job> [--backfill] [--force]
 ```
 
-The scheduler runs in the `scheduler` service on the VPS (`python -m ingestion.scheduler`,
-Asia/Dhaka). It reads `backend/ingestion/schedule.py` and records every run in
-`ingestion_runs`; the staleness check alerts when a source is older than its expected
-interval.
+The scheduler in `backend/ingestion/schedule.py` is the canonical cadence (Asia/Dhaka). In the
+**legacy VPS** deployment it runs in the `scheduler` service. In the **primary Cloudflare**
+deployment the heavy jobs run in `.github/workflows/ingest.yml` on GitHub Actions; the
+workflow restores a Postgres snapshot from R2, runs the jobs, dumps it back, and syncs D1.
+Every run is recorded in `ingestion_runs`; the staleness check alerts when a source is older
+than its expected interval.
 
 ## Jobs
 
@@ -43,6 +45,28 @@ records how many answered; if every adapter fails, the run fails.
 `bb_workbook` and `bb_web` overlap deliberately: the workbook gives long history and the
 HTML pages give the current month. `bb_web` runs twice a day because BB updates the FX and
 reserve pages during the working day.
+
+## Primary runner: GitHub Actions
+
+`.github/workflows/ingest.yml` runs the heavy Python jobs daily at **01:30 UTC** (07:30
+Asia/Dhaka) and on `workflow_dispatch`:
+
+1. Start `postgres:18` and `redis:7` service containers.
+2. Restore `s3://bangladeshdatahub-raw/postgres/latest.dump`.
+3. Run the selected jobs with `python -m ingestion.run <job> --force`.
+4. Dump Postgres back to R2, export `series/<id>.json`, and sync changed rows to D1.
+
+The default set is every job except `bbs_census` (a one-off 64-workbook census; run it
+manually). Add `bb_payments`/`bbs_gdp` to the input when you need a narrower run.
+
+A manager timeout inside `amc_nav` is a **partial source failure**: the job skips that
+manager, records the remaining count in `funds.amc_nav.managers`, and still succeeds. If
+every adapter fails, the job fails. A full AMC run is ~5 minutes; the whole default set is
+~8 minutes in practice.
+
+After the jobs, `scripts.sync_d1` pushes changed rows to the API Worker. D1's free tier is
+100k rows written/day; the sync stops cleanly at that cap and resumes on the next run. See
+[`cloudflare-runbook.md`](./cloudflare-runbook.md).
 
 ## How a run works
 

@@ -19,7 +19,7 @@ on:
       jobs:
         description: "Comma-separated ingestion jobs"
         required: false
-        default: "bb_web,bb_workbook,bbs_cpi,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators"
+        default: "bb_web,bb_workbook,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators"
       full_sync:
         description: "Send the whole Postgres snapshot to D1 (slower)"
         type: boolean
@@ -100,7 +100,7 @@ jobs:
         run: |
           set +e
           status=0
-          IFS=',' read -ra JOBS <<< "${{ inputs.jobs || 'bb_web,bb_workbook,bbs_cpi,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators' }}"
+          IFS=',' read -ra JOBS <<< "${{ inputs.jobs || 'bb_web,bb_workbook,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators' }}"
           for job in "${JOBS[@]}"; do
             job="$(echo "$job" | xargs)"
             [ -z "$job" ] && continue

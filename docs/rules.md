@@ -4,8 +4,9 @@ These are the invariants that keep the product trustworthy. They are not suggest
 
 ## 1. Secrets live in `secrets.md` only
 
-Never put a credential in `backend/`, `frontend/public/`, `ops/`, docs, commit messages or
-logs. `.env` is gitignored. The gitleaks scan in CI checks the full history.
+Never put a credential in `backend/`, `frontend/public/`, `ops/`, `cloudflare/`, docs, commit
+messages or logs. `.env` is gitignored. The gitleaks scan in CI checks the full history.
+Worker secrets go through `wrangler secret put`; `wrangler.jsonc` holds only non-secret vars.
 
 ## 2. Production data: back up, then change
 
@@ -31,8 +32,9 @@ marked `failed` and the staleness alert fires.
 
 ## 6. Vintages are owned by the database
 
-Never hand-write `first_seen_at` or rows in `observation_revisions`. The trigger and
-`scripts/vintages_core.py` own them.
+Never hand-write `first_seen_at` or rows in `observation_revisions`. The Postgres trigger,
+the D1 trigger and `scripts/vintages_core.py` own them. `adminSync` writes observations
+through the D1 trigger; do not bypass it with a raw value update.
 
 ## 7. Counts are never typed by hand
 
@@ -67,3 +69,33 @@ publisher does.
 Removing a dataset, changing a series id or changing a unit is a breaking API change.
 Announce it in `frontend/content/docs/changelog.md` and keep the old id as an alias or
 canonical redirect where possible.
+
+## 13. Website → API uses the service binding
+
+Same-zone Worker-to-Worker `fetch` is blocked with Cloudflare error 1042. Keep the `API`
+service binding in `frontend/wrangler.jsonc` and call `env.API.fetch(...)` from
+`client.server.ts`. Keep `nodejs_compat_populate_process_env` or `process.env` is empty and
+the site silently renders fixtures.
+
+## 14. D1 batches are parameter-bounded
+
+D1 allows 100 bound parameters per statement/batch. `adminSync` flushes 5 statements at a
+time (widest row 18 columns = 90 params). Do not raise the batch size without checking the
+widest INSERT.
+
+## 15. D1 writes are resumable, not guaranteed
+
+D1 free allows 100k rows written/day. `sync_d1` must stop cleanly on
+`free tier daily row write limit`, leave the watermark unchanged, and exit successfully so
+the next run resumes. Never advance the watermark before every batch succeeds.
+
+## 16. The R2 series mirror is generated
+
+`series/<id>.json` and `series/_index.json` come from `scripts/export_r2_series.py`. Do not
+hand-edit or hand-upload them; rerun the exporter after a data change.
+
+## 17. Cloudflare deploy order is API, then site
+
+Deploy `bangladatahub-api` first when the API contract or D1 schema changes, then rebuild and
+deploy `bangladatahub`. The site's service binding points at the deployed API by name, but a
+new endpoint or column must exist before the site calls it.

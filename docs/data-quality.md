@@ -88,6 +88,11 @@ The `observation_revisions` trigger records the prior value whenever an observat
 and `observations.first_seen_at` says when we first held the point. The API exposes
 `?vintage=YYYY-MM-DD` and `/v1/series/{id}/revisions` (Pro/Business).
 
+D1 mirrors the trigger (`cloudflare/api/schema.sql`, `trg_observation_revision`).
+`adminSync` writes through it, so a restatement synced from Postgres creates a D1 revision
+too; the Worker’s `/revisions` and `?vintage=` read that table. Postgres remains the
+canonical writer; D1 is the serving copy.
+
 TCB is the first source that prints several prior dates in every workbook (today, a week
 ago, a month ago, a year ago). The `tcb_prices` job re-emits those columns as observations,
 so a later workbook that restates an old date becomes a real revision. The same pattern can

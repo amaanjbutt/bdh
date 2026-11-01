@@ -42,28 +42,35 @@ Open work, roughly in priority order.
 
 ## Platform
 
-10. ~~**R2.**~~ Done 2026-10-31: R2 enabled, bucket `bangladeshdatahub-raw` created, S3
-    token installed and `storage.py` uploads verified via `bb_web`.
-11. ~~**Refresh `live-counts.json`.**~~ Done 2026-11-01: 3,585 series / 115,901 observations.
-12. **Prune the legacy schema.** `agri_markets`, `agri_prices`, `funds`, `securities`,
-    `trade_flows`, `ismo_merit_tokens` and related tables are unused. Drop them in a
-    migration once no code references them.
-13. **Remove dead frontend modules.** `mandi.ts`, `trade.ts`, `guides.ts` and the
+1. ~~**R2.**~~ Done 2026-10-31: bucket `bangladeshdatahub-raw`, S3 token installed, uploads
+   verified via `bb_web`. Also holds `postgres/latest.dump` and `series/<id>.json`.
+2. ~~**Refresh `live-counts.json`.**~~ Done 2026-11-01: 3,596 series / 118,991 observations.
+3. ~~**Deploy.**~~ Done 2026-11-01: `bangladatahub-api` (Worker + D1) and `bangladatahub`
+   (website) are live on `*.amaanjbutt.workers.dev`; D1 seeded with 3,596 series /
+   118,991 observations; `Ingest` workflow + R2 snapshot wired; free-tier auth/account/API
+   keys and the dashboard work on D1; R2 has a 3,596-file `series/<id>.json` mirror (23.5 MB).
+4. **Attach the custom domain.** Add the `bangladatahub.com` zone to Cloudflare, route
+   `bangladatahub.com/*` → `bangladatahub` and `api.bangladatahub.com/*` →
+   `bangladatahub-api`, then update `BANGLADATA_API_BASE` / `BANGLADATA_PUBLIC_API_BASE`.
+5. **Enable the cron watchdog.** Set `GITHUB_TOKEN` (actions:write on `amaanjbutt/bdh`) on
+   `bangladatahub-api`; the 30-minute cron then dispatches `ingest.yml` when data is >2 days
+   old. GitHub's own daily schedule already runs it.
+6. **Upgrade to Workers Paid.** D1 free allows 100k rows written/day; the initial seed
+   exhausted it. Paid gives write/CPU headroom for the sync and for PBKDF2 signup.
+7. **Port the remaining paid features.** Checkout/billing portal, Google OAuth, webhook
+   delivery and Redis-equivalent rate limiting are not on the Worker yet. Free auth/keys/
+   dashboard are.
+8. **D1 request logging / usage counters.** `/v1/usage` returns zeros until requests are
+   recorded. Add a bounded rollup (D1 or Workers Analytics Engine) if usage charts matter.
+9. **Prune the legacy schema.** `agri_markets`, `agri_prices`, `funds`, `securities`,
+   `trade_flows`, `ismo_merit_tokens` and related tables are unused. Drop them in a
+   migration once no code references them.
+10. **Remove dead frontend modules.** `mandi.ts`, `trade.ts`, `guides.ts` and the
     mandi/trade branches of `bot-render.ts` are no longer routed. Delete them and shrink the
     bundle.
-14. **Data-quality job.** Schedule `data_quality` (spike/unit checks) and surface
+11. **Data-quality job.** Schedule `data_quality` (spike/unit checks) and surface
     `dq_findings` on `/status`.
-15. ~~**Deploy.**~~ Done 2026-11-01: `bangladatahub-api` (Worker + D1) and
-    `bangladatahub` (website) are live on `*.amaanjbutt.workers.dev`; D1 seeded with
-    3,596 series / 118,991 observations; `Ingest` workflow + R2 snapshot wired; free-tier
-    auth/account/API keys and the dashboard work on D1; R2 has a 3,596-file
-    `series/<id>.json` flat-file mirror (23.5 MB) for export/backup.
-    Remaining: add the `bangladatahub.com` zone and the two Worker routes; set
-    `GITHUB_TOKEN` on the API Worker to enable the cron watchdog; upgrade to Workers
-    Paid for D1 write/CPU headroom (the free tier's 100k rows/day was exhausted by the
-    initial seed and resumes at midnight UTC); port paid checkout, Google OAuth, webhook
-    delivery and Redis-equivalent rate limiting.
-16. ~~**CI.**~~ Green on 2026-10-31 (`repo`, `backend`, `frontend`).
+12. ~~**CI.**~~ Green on 2026-11-01 (`repo`, `backend`, `frontend`, `ingest`).
 
 ## Frontend
 

@@ -78,8 +78,9 @@ JSON envelope `{success, data, meta}`; CSV via `format=csv`; transforms
 
 **Production read API** — `cloudflare/api/src/index.ts` (Cloudflare Worker + D1) mirrors
 the public catalog, series, status, market, regional, funds, DAM and calendar endpoints.
-Auth/billing/dashboard write endpoints still live in FastAPI. The Worker is the only API
-the public site calls; the D1 schema is `cloudflare/api/schema.sql`.
+Free auth (signup/login/sessions), account, API keys and usage summary are also on the
+Worker. Paid billing, Google OAuth and webhook delivery still live in FastAPI. The Worker is
+the only API the public site calls; the D1 schema is `cloudflare/api/schema.sql`.
 
 **Auth** — `X-API-Key` for the API; server-side sessions for the dashboard. Plans
 Free/Developer/Pro/Business differ by quota, history depth, vintages, webhooks and display
@@ -98,11 +99,16 @@ rights.
 - `joblock.py` — Redis single-flight lock.
 - `alerting.py` — Resend email + optional webhook.
 
+In the Cloudflare deployment, `.github/workflows/ingest.yml` provides the runtime: it
+restores the Postgres snapshot from R2, runs the jobs, dumps the result back, exports
+`series/<id>.json`, and syncs changed rows to D1. The VPS scheduler remains an alternative.
+
 ## Frontend
 
 TanStack Start (React 19, SSR) + Vite + Tailwind v4 + shadcn + Recharts, built for Cloudflare
-Workers. `src/lib/bangladata/client.server.ts` holds the site API key server-side; without
-`BANGLADATA_API_BASE` the site renders fixtures.
+Workers. `src/lib/bangladata/client.server.ts` holds the site API key server-side and calls
+the API Worker through the `API` service binding. Outside Workers (local dev, scripts) it
+falls back to `BANGLADATA_API_BASE`; without either, the site renders fixtures.
 
 Pages: landing, `/data/{module}`, `/series/{id}`, `/market`, `/districts`,
 `/districts/{slug}`, `/topics`, `/topics/{slug}`, `/derived`, `/coverage`, `/calendar`,

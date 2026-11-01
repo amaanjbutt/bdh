@@ -41,7 +41,8 @@ Secrets live in `secrets.md` on the owner's machine and in GitHub/Cloudflare sec
 
 The live product is Cloudflare Workers + D1 + R2; the Python jobs run on GitHub
 Actions. The full map, URLs, deploy commands and data flow are in
-[`cloudflare.md`](./cloudflare.md). The short version:
+[`cloudflare.md`](./cloudflare.md); commands are in
+[`cloudflare-runbook.md`](./cloudflare-runbook.md). The short version:
 
 ```bash
 cd cloudflare/api && npx wrangler deploy          # API + D1 + cron
@@ -103,10 +104,17 @@ docker compose -f docker-compose.server.yml exec -T db \
 
 ## Health and incidents
 
-- `GET /health` — process is up.
-- `GET /v1/status` — database reachable, module freshness, totals.
-- `ingestion_runs` — last run per job, status, rows, error, raw file.
-- `dq_findings` — data-quality findings.
+- `GET /health` - process is up.
+- `GET /v1/status` - database reachable, module freshness, totals.
+- `GET /admin/state` - D1 counts + sync watermark (send `X-Sync-Token`).
+- `ingestion_runs` - last run per job, status, rows, error, raw file.
+- `dq_findings` - data-quality findings.
+
+Live health checks:
+
+- <https://bangladatahub-api.amaanjbutt.workers.dev/health>
+- <https://bangladatahub-api.amaanjbutt.workers.dev/v1/status>
+- <https://bangladatahub.amaanjbutt.workers.dev/status>
 
 | Symptom | Check |
 |---|---|
@@ -115,13 +123,15 @@ docker compose -f docker-compose.server.yml exec -T db \
 | Source stale | `ingestion_runs` for the job; dispatch it manually with `--force` |
 | Census partial | the job skips unparseable files and reports `partial`; inspect the log and re-run |
 | R2 upload failing | R2 must be enabled in the Cloudflare dashboard; the local archive still succeeds |
-| Frontend 5xx | Worker logs; check `BANGLADATA_API_BASE` and the API status page |
+| Frontend 5xx / fixture values | Worker logs; check the `API` service binding, `nodejs_compat_populate_process_env`, and the API `/v1/status` |
+| D1 sync paused | `/admin/state` watermark; `free tier daily row write limit` resets at 00:00 UTC |
 
 ## Cloudflare R2
 
 R2 is enabled on the account, the bucket `bangladeshdatahub-raw` exists, and the S3 token
-is in the local `.env` and (when provisioned) the VPS `.env`. The local archive is always
-written; R2 is the mirror. To rotate the token:
+is in the local `.env`, the GitHub repository secrets used by `ingest.yml`, and (when
+provisioned) the VPS `.env`. The local archive is always written; R2 is the mirror. To
+rotate the token:
 
 1. Create an S3 API token with object read/write on the bucket in the Cloudflare dashboard.
 2. Replace `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` in `secrets.md` and the VPS `.env`.

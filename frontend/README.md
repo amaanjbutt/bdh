@@ -2,8 +2,11 @@
 
 The website, docs and self-serve dashboard. **TanStack Start (SSR, React 19) + Vite +
 Tailwind v4 + shadcn + Recharts**, built for **Cloudflare Workers** (worker
-`bangladatahub`). It talks to `https://api.bangladatahub.com` server-side only — the site's
-API key never reaches the browser.
+`bangladatahub`). It calls the API Worker through a **service binding** (`env.API`); the
+site's API key never reaches the browser.
+
+Live: <https://bangladatahub.amaanjbutt.workers.dev>. The intended domain is
+`bangladatahub.com` (zone not attached yet).
 
 ## Develop
 
@@ -13,7 +16,8 @@ Node 24 (CI uses 24; 20+ works).
 npm ci
 npm run dev            # http://localhost:8080 — fixtures unless BANGLADATA_API_BASE is set
 # against the live API:
-BANGLADATA_API_BASE=https://api.bangladatahub.com BANGLADATA_API_KEY=<key> npm run dev
+BANGLADATA_API_BASE=https://bangladatahub-api.amaanjbutt.workers.dev \
+BANGLADATA_API_KEY=<key> npm run dev
 npm run lint && npm run typecheck && npm run build
 ```
 
@@ -23,27 +27,42 @@ regenerates the files listed below.
 
 ## Deploy
 
-After a merge, `ops/deploy/deploy_from_pc.sh web` (from the repo root) builds and deploys.
-The raw steps:
-
 ```sh
 npm run build
-npx wrangler deploy
+cd .output/server
+npx wrangler deploy \
+  --var BANGLADATA_API_BASE:https://bangladatahub-api.amaanjbutt.workers.dev \
+  --var BANGLADATA_PUBLIC_API_BASE:https://bangladatahub-api.amaanjbutt.workers.dev
 ```
 
-`wrangler.jsonc` pins the worker name (`bangladatahub`) and the `compatibility_date`. To
-force-refresh cached pages bump `CACHE_BUST_VERSION` in `src/server.ts` — never for
+The API key is a Worker secret, set once:
+
+```sh
+cd .output/server
+npx wrangler secret put BANGLADATA_API_KEY
+```
+
+`frontend/wrangler.jsonc` pins the worker name (`bangladatahub`), the
+`compatibility_date`, `nodejs_compat_populate_process_env`, and the `API` service binding.
+Do not remove any of those: without the flag `process.env` is empty and the site silently
+renders fixtures; without the binding, Worker-to-Worker fetches fail with Cloudflare 1042.
+
+If Wrangler reports both a user config and a deploy config, remove the generated redirect
+`frontend/.wrangler/deploy/config.json` and deploy from `.output/server` again.
+
+To force-refresh cached pages bump `CACHE_BUST_VERSION` in `src/server.ts` — never for
 `/series` or `/data`.
 
 ## Where things live
 
 - **Routes** — `src/routes/*.tsx` (file-based; `routeTree.gen.ts` is generated).
   `__root.tsx` = shell + site-wide JSON-LD.
-- **Data layer** — `src/lib/bangladata/`: `client.server.ts` (server-only;
-  `BANGLADATA_API_BASE`/`BANGLADATA_API_KEY`, fixtures fallback), `api.functions.ts` (page
-  loaders), `dashboard.functions.ts`/`auth.functions.ts` (user calls, proxied with the user's
-  own key/session), `catalog.ts` (modules, `MODULE_TO_BACKEND`, explorers), `format.ts`
-  (`fmtValue`, `unitLabel`), `districts.ts`, `cross-section.ts`, `search.ts`.
+- **Data layer** — `src/lib/bangladata/`: `client.server.ts` (server-only; service binding,
+  `BANGLADATA_API_BASE`/`BANGLADATA_API_KEY` for non-Worker runs, fixtures fallback),
+  `api.functions.ts` (page loaders), `dashboard.functions.ts`/`auth.functions.ts` (user calls,
+  proxied with the user's own key/session), `catalog.ts` (modules, `MODULE_TO_BACKEND`,
+  explorers), `format.ts` (`fmtValue`, `unitLabel`), `districts.ts`, `cross-section.ts`,
+  `search.ts`.
 - **SEO / crawlers** — `seo.ts` (titles, descriptions, JSON-LD shared by React pages and
   crawler HTML), `bot-render.ts` (lightweight HTML for crawler UAs on a cache miss — add
   every new crawlable route), `src/server.ts` (edge cache rules, `CACHE_BUST_VERSION`, bot
@@ -67,3 +86,5 @@ force-refresh cached pages bump `CACHE_BUST_VERSION` in `src/server.ts` — neve
   catalog seeds.
 - The site is edge-cached; a data change appears after the cache TTL unless you bump
   `CACHE_BUST_VERSION`.
+- Google sign-in is not ported to the Worker; the button was removed from signup/login.
+  The FastAPI API still has `/auth/google/*` for the legacy/VPS path.

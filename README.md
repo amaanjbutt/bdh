@@ -17,14 +17,17 @@ D1 at the edge.
 
 ```
 backend/     Python ingestion + FastAPI reference API, Postgres schema, operator scripts, tests
-cloudflare/  Cloudflare API Worker, D1 schema, cron trigger (the live public API)
+cloudflare/  Cloudflare API Worker, D1 schema/migrations, cron trigger (the live public API)
 frontend/    the website — TanStack Start (SSR) on Cloudflare Workers, markdown docs/blog CMS
-ops/         deploy, Caddy, Cloudflare Relay/R2, ingestion workflows, SEO scripts
-docs/        internal docs: architecture, ingestion, operations, data quality, rules, decisions
+ops/         legacy VPS/Caddy deploy, Cloudflare relay, SEO scripts
+docs/        internal docs: Cloudflare map/runbook, architecture, ingestion, data quality, rules, decisions
 .github/     CI and the `Ingest` GitHub Actions workflow (heavy Python jobs)
 ```
 
-**AI agents and new contributors: read [`AGENTS.md`](./AGENTS.md) first.**
+**AI agents and new contributors: read [`AGENTS.md`](./AGENTS.md) first.** Deployment is in
+[`docs/cloudflare.md`](docs/cloudflare.md), commands in
+[`docs/cloudflare-runbook.md`](docs/cloudflare-runbook.md), and the full build log in
+[`docs/history/2026-11-01-cloudflare-deployment.md`](docs/history/2026-11-01-cloudflare-deployment.md).
 
 ## Quick start (local)
 

@@ -5,8 +5,10 @@ economic, financial and market data. It turns the PDFs, Excel workbooks and HTML
 published by Bangladesh Bank, BBS, NBR, EPB and DSE into one consistent, documented time-series
 database with JSON/CSV delivery, revision history and a free tier.
 
-- Website: **https://bangladatahub.com**
-- API: **https://api.bangladatahub.com**
+- Website: **https://bangladatahub.com** (live preview:
+  <https://bangladatahub.amaanjbutt.workers.dev>)
+- API: **https://api.bangladatahub.com** (live preview:
+  <https://bangladatahub-api.amaanjbutt.workers.dev>)
 - Repo: **https://github.com/amaanjbutt/bdh**
 
 ## Who it is for

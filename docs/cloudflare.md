@@ -3,14 +3,25 @@
 The public product now runs on Cloudflare. The heavy Python parsers still run on
 GitHub Actions; no VPS is required.
 
+**Start with** [`cloudflare-runbook.md`](./cloudflare-runbook.md) for commands, and
+[`history/2026-11-01-cloudflare-deployment.md`](./history/2026-11-01-cloudflare-deployment.md)
+for the build log and the failures that shaped this design.
+
 | Piece | Where | URL / binding |
 |---|---|---|
 | Website | Cloudflare Worker `bangladatahub` | <https://bangladatahub.amaanjbutt.workers.dev> |
 | Public API | Cloudflare Worker `bangladatahub-api` | <https://bangladatahub-api.amaanjbutt.workers.dev> |
-| Serving database | D1 `bangladatahub` (APAC) | binding `DB` |
+| Serving database | D1 `bangladatahub` (APAC) | `2de61d47-c067-4d35-83de-a88d05774eae`, binding `DB` |
 | Raw archive + Postgres snapshot | R2 `bangladeshdatahub-raw` | `postgres/latest.dump` |
+| Per-series flat files | R2 `bangladeshdatahub-raw` | `series/<id>.json`, `series/_index.json` |
 | Heavy ingestion | GitHub Actions `Ingest` workflow | `.github/workflows/ingest.yml` |
 | Schedule / stale check | Cloudflare Cron Trigger | `*/30 * * * *` |
+| Account / subdomain | Cloudflare `amaanjbutt.workers.dev` | account details in `secrets.md` |
+
+As seeded, D1 holds **3,596 series / 118,991 observations / 358 revisions / 86 funds /
+21 AMCs / 632 securities**. The first full GitHub Actions run produced more changes; those
+are in the R2 Postgres snapshot and will be synced to D1 on the next run after the daily
+write budget resets. Live counts always come from `/v1/status`, not this paragraph.
 
 ## Why the split
 
@@ -50,6 +61,7 @@ GitHub Actions (daily 01:30 UTC / 07:30 BST)
   -> restore s3://bangladeshdatahub-raw/postgres/latest.dump
   -> run Python ingestion jobs
   -> dump Postgres back to R2
+  -> export series/<id>.json + _index.json to R2
   -> scripts.sync_d1 posts changed rows to /admin/sync
        -> D1 upsert + revision trigger
 ```
@@ -98,12 +110,12 @@ npx wrangler d1 execute bangladatahub --remote --file=schema.sql
 # snapshot export (from the canonical Postgres)
 cd backend
 DATABASE_URL=... python -m scripts.export_d1
-# apply cloudflare/api/seed/*.sql in name order with wrangler d1 execute
+# apply backend/data/d1/*.sql in name order with wrangler d1 execute
 ```
 
 `backend/scripts/export_d1.py` writes chunked `INSERT OR REPLACE` files (1,000
-rows each) so no single D1 request is too large. The seed directory is
-gitignored.
+rows each) to `backend/data/d1/` so no single D1 request is too large. That
+directory is gitignored.
 
 ## Auth and accounts
 

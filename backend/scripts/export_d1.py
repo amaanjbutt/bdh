@@ -19,7 +19,7 @@ from pathlib import Path
 import psycopg
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "cloudflare" / "api" / "seed"
+OUT = ROOT / "backend" / "data" / "d1"
 CHUNK = 1000
 
 # table -> (columns, order_by)
