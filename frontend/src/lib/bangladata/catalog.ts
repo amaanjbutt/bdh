@@ -97,6 +97,14 @@ export const MODULES: ModuleDef[] = [
     source: "BPDB · NLDC",
   },
   {
+    slug: "funds",
+    name: "Mutual Funds",
+    line: "Daily NAV and market price for ICB Asset Management's open-ended funds",
+    cadence: "Daily",
+    depth: "2026 →",
+    source: "ICB AMC",
+  },
+  {
     slug: "market",
     name: "Capital Markets",
     line: "DSEX, DS30, DSES, turnover, market capitalisation and every listed instrument's daily OHLCV",
@@ -203,22 +211,23 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
   inflation: 36,
   rates: 24,
   monetary: 88,
-  external: 267,
+  external: 373,
   fiscal: 48,
   real: 111,
   industry: 13,
   payments: 1298,
   telecom: 26,
   energy: 102,
+  funds: 30,
   market: 27,
-  commodities: 146,
-  agri: 24,
+  commodities: 148,
+  agri: 25,
   social: 231,
   regional: 750,
 };
 
 export const TOTAL_SERIES = Object.values(MODULE_SERIES_COUNTS).reduce((a, b) => a + b, 0);
-export const TOTAL_OBSERVATIONS = 95_325;
+export const TOTAL_OBSERVATIONS = 98_038;
 export const TOTAL_FUNDS = 0;
 
 export const PLANS: Plan[] = [

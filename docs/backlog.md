@@ -19,23 +19,23 @@ Open work, roughly in priority order.
    Still open: ARPU and cell-site counts (not on the same public tables).
 5. ~~**TCB daily retail prices.**~~ Done 2026-10-31: `tcb_prices` reads the daily Dhaka
    XLSX for 58 essential items (min/max, BDT per kg/litre/hali/tonne).
-6. **BERC / BPDB energy.** BPDB daily generation is done (`bpdb_power`). BERC's retail
-   tariff order is a scanned 30-page PDF with no text layer; it needs OCR plus a tariff-table
-   model before it can be published.
-7. **DAM daily prices.** The divisional PDFs exist, but their Bengali text extracts as
-   legacy-font mojibake and pdfplumber only recovers a handful of rows. OCR or a custom font
-   mapping is required; do not publish the current extraction.
-8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026
-   onwards). Older NBR PDFs use different templates and are rejected by the subtotal check.
-9. **BSEC mutual funds.** BSEC publishes the fund registry and prospectuses, not a central
-   daily NAV feed. NAVs are published by each AMC; a fund job needs a per-AMC source list
-   and a NAV parser before it can be complete.
+6. **BERC retail tariff.** The order is a scanned 30-page PDF with no text layer. OCR
+   (Tesseract `ben`) reads the prose but not a reliable tariff table; needs a table model
+   before it can be published.
+7. **DAM daily prices.** `dam_prices` now reads the text-extractable division PDFs (six
+   divisions, ~270 rows/day). Khulna, Barishal and part of Rangpur are image-only and still
+   need OCR.
+8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026).
+   Older NBR PDFs use different templates and are rejected by the subtotal check.
+9. **Mutual funds.** `icb_nav` covers ICB AMC's 15 open-ended funds. Other AMCs need their
+   own NAV adapters; BSEC has no central daily NAV feed.
 10. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix
     needs NBR/BB data. Scope the smallest useful table (top 50 products × 20 partners).
-11. **Mutual funds and DSE company fundamentals.** Not in scope for launch; the DSE feed
-    covers prices and indices only.
-12. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep
+11. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep
     it a separate dimension so existing district queries do not change.
+12. **Vintage backfill.** The trigger and `?vintage=` work; TCB reprints give one year of
+    historical columns. A full multi-issue backfill (BB Monthly Economic Trends archive)
+    is still open.
 
 ## Platform
 

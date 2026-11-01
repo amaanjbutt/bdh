@@ -23,6 +23,7 @@
   <url><loc>https://bangladatahub.com/data/payments</loc><priority>0.8</priority></url>
   <url><loc>https://bangladatahub.com/data/telecom</loc><priority>0.8</priority></url>
   <url><loc>https://bangladatahub.com/data/energy</loc><priority>0.8</priority></url>
+  <url><loc>https://bangladatahub.com/data/funds</loc><priority>0.8</priority></url>
   <url><loc>https://bangladatahub.com/data/commodities</loc><priority>0.8</priority></url>
   <url><loc>https://bangladatahub.com/data/agri</loc><priority>0.8</priority></url>
   <url><loc>https://bangladatahub.com/data/social</loc><priority>0.8</priority></url>

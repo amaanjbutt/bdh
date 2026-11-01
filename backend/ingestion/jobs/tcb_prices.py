@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import io
 import re
-from datetime import date
+from datetime import date, timedelta
 
 import openpyxl
 from bs4 import BeautifulSoup
@@ -156,6 +156,7 @@ class TcbPricesJob(IngestionJob):
                     out.append(FetchedFile(f"tcb_{i:02d}.xlsx", content, date.today()))
             except Exception:
                 continue
+        out.sort(key=lambda f: f.when)
         return out
 
     def parse(self, f: FetchedFile) -> list[Record]:
@@ -172,23 +173,36 @@ class TcbPricesJob(IngestionJob):
             if item is None:
                 continue
             slug, english, unit = item
-            lo = ws.cell(row, 3).value
-            hi = ws.cell(row, 4).value
-            if not isinstance(lo, (int, float)) or not isinstance(hi, (int, float)):
-                continue
-            for suffix, value, label in (("min", lo, "minimum"), ("max", hi, "maximum")):
-                if value is None or value <= 0:
+            # Current, a week ago, a month ago and a year ago are printed side by
+            # side. Re-emitting the prior columns turns every reprint into a real
+            # vintage: if a later workbook restates an old date, the trigger records
+            # the revision.
+            for offset, cmin, cmax in (
+                (0, 3, 4),
+                (7, 5, 6),
+                (30, 7, 8),
+                (365, 9, 10),
+            ):
+                obs_date = d - timedelta(days=offset)
+                lo = ws.cell(row, cmin).value
+                hi = ws.cell(row, cmax).value if ws.max_column >= cmax else lo
+                if not isinstance(lo, (int, float)):
                     continue
-                sid = f"prices.tcb.{slug}.{suffix}"
-                dynamic[sid] = {
-                    "id": sid, "module": "commodities",
-                    "name": f"{english} — {label} retail price (BDT/{unit})",
-                    "description": f"TCB daily Dhaka retail price, {english}, {label}, BDT per {unit}.",
-                    "unit": "bdt", "frequency": "daily", "source": "TCB",
-                    "source_url": LANDING, "dimensions": {"unit": unit},
-                    "min_value": 0, "max_value": 500_000, "max_step": None, "tier": "basic",
-                }
-                records[(sid, d)] = float(value)
+                if not isinstance(hi, (int, float)):
+                    hi = lo
+                for suffix, value, label in (("min", lo, "minimum"), ("max", hi, "maximum")):
+                    if value is None or value <= 0:
+                        continue
+                    sid = f"prices.tcb.{slug}.{suffix}"
+                    dynamic[sid] = {
+                        "id": sid, "module": "commodities",
+                        "name": f"{english} — {label} retail price (BDT/{unit})",
+                        "description": f"TCB daily Dhaka retail price, {english}, {label}, BDT per {unit}.",
+                        "unit": "bdt", "frequency": "daily", "source": "TCB",
+                        "source_url": LANDING, "dimensions": {"unit": unit},
+                        "min_value": 0, "max_value": 500_000, "max_step": None, "tier": "basic",
+                    }
+                    records[(sid, obs_date)] = float(value)
         wb.close()
         if dynamic:
             ensure_series(list(dynamic.values()))

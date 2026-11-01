@@ -44,6 +44,7 @@
   <url><loc>https://bangladatahub.com/series/commodities.world.united_states_rotterdam</loc><lastmod>2017-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/commodities.world.united_states_us_gulf_ports</loc><lastmod>2017-05-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/commodities.world.u_s_import_price</loc><lastmod>2017-05-01</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/dam.prices.rows</loc><lastmod>2026-09-08</lastmod></url>
   <url><loc>https://bangladatahub.com/series/derived.real_call_money</loc><lastmod>2026-09-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/derived.real_m2_growth</loc><lastmod>2026-08-01</lastmod></url>
   <url><loc>https://bangladatahub.com/series/derived.remittances_growth_yoy</loc><lastmod>2026-09-01</lastmod></url>
@@ -219,6 +220,36 @@
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_import.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_local</loc><lastmod>2026-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fiscal.nbr.vat_local.fy_to_date</loc><lastmod>2026-06-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.bangladesh_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.bangladesh_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.eighth_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.eighth_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.fifth_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.fifth_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.first_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.first_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.fourth_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.fourth_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_converted_first_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_converted_first_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_islamic_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_islamic_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_pension_holders_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_pension_holders_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_second_nrb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_second_nrb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_shotoborsho_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_shotoborsho_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.icb_amcl_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.second_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.second_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.seventh_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.seventh_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.sixth_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.sixth_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.third_icb_unit_fund.market_price</loc><lastmod>2026-10-29</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/funds.icb.third_icb_unit_fund.nav</loc><lastmod>2026-10-29</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fx.rate.acu_dollar_end_period</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fx.rate.acu_dollar_period_average</loc><lastmod>2021-06-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/fx.rate.aud</loc><lastmod>2026-10-29</lastmod></url>
@@ -1869,6 +1900,8 @@
   <url><loc>https://bangladatahub.com/series/prices.tcb.ginger_local.min</loc><lastmod>2026-10-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/prices.tcb.green_chilli.max</loc><lastmod>2026-10-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/prices.tcb.green_chilli.min</loc><lastmod>2026-10-30</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/prices.tcb.hilsa.max</loc><lastmod>2026-10-12</lastmod></url>
+  <url><loc>https://bangladatahub.com/series/prices.tcb.hilsa.min</loc><lastmod>2026-10-12</lastmod></url>
   <url><loc>https://bangladatahub.com/series/prices.tcb.lemon.max</loc><lastmod>2026-10-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/prices.tcb.lemon.min</loc><lastmod>2026-10-30</lastmod></url>
   <url><loc>https://bangladatahub.com/series/prices.tcb.maida_open.max</loc><lastmod>2026-10-30</lastmod></url>

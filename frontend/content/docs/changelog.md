@@ -19,5 +19,6 @@ order: 2
 - TCB daily Dhaka retail prices for essential commodities
 - NBR monthly revenue: customs, VAT, income tax and components
 - BPDB/NLDC daily power generation, demand, fuel mix and load-shedding
+- ICB AMC daily mutual-fund NAV and market price
 - Bangladesh Bank digital payments and agent banking
 - Derived layer: real call-money rate, real M2 growth, remittance growth, BDT depreciation

@@ -490,6 +490,25 @@ ALTER TABLE agri_commodities ADD COLUMN IF NOT EXISTS urdu_name TEXT;
 ALTER TABLE agri_commodities ADD COLUMN IF NOT EXISTS crop_key TEXT;
 CREATE INDEX IF NOT EXISTS idx_agri_prices_date ON agri_prices(obs_date);
 
+-- DAM division-level daily retail prices (one PDF per division per day).
+CREATE TABLE IF NOT EXISTS dam_prices (
+    price_date      DATE NOT NULL,
+    division        TEXT NOT NULL,
+    commodity       TEXT NOT NULL,
+    unit            TEXT NOT NULL,
+    current_min     NUMERIC,
+    current_max     NUMERIC,
+    month_ago_min   NUMERIC,
+    month_ago_max   NUMERIC,
+    year_ago_min    NUMERIC,
+    year_ago_max    NUMERIC,
+    source          TEXT NOT NULL DEFAULT 'DAM',
+    revised_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (price_date, division, commodity, unit)
+);
+CREATE INDEX IF NOT EXISTS idx_dam_prices_date ON dam_prices(price_date DESC);
+CREATE INDEX IF NOT EXISTS idx_dam_prices_division ON dam_prices(division, commodity, price_date DESC);
+
 -- Data-quality audit (2026-10-14, scripts/dq_audit.py): suspect values found by detectors,
 -- whole-series reconciliations against the publisher, and the points that disagreed.
 CREATE TABLE IF NOT EXISTS dq_findings (

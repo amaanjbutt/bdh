@@ -34,6 +34,11 @@ SCHEDULES: list[Schedule] = [
     Schedule("btrc_telecom", {"hour": 9, "minute": 40}, expected_interval=timedelta(days=40), stale_on_run=True),
     # BPDB/NLDC daily power-system summary (generation, demand, fuel mix, load-shed).
     Schedule("bpdb_power", {"hour": 10, "minute": 10}, expected_interval=timedelta(days=3), stale_on_run=True),
+    # DAM daily division-level retail prices (PDF tables).
+    Schedule("dam_prices", {"hour": 9, "minute": 50}, expected_interval=timedelta(days=7), stale_on_run=True),
+    # ICB AMC daily NAV (after the DSE close).
+    Schedule("icb_nav", {"hour": 17, "minute": 30, "day_of_week": "sun,mon,tue,wed,thu"},
+             expected_interval=timedelta(days=4), stale_on_run=True),
     # BBS CPI release: check every morning; publish shortly after the monthly release.
     Schedule("bbs_cpi", {"hour": 7, "minute": 10}, expected_interval=timedelta(days=40), stale_on_run=True),
     # Annual/quarterly GDP: cheap monthly check.
