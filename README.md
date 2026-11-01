@@ -4,20 +4,24 @@ Self-serve REST API and website for **Bangladesh's official economic, financial 
 data** — macro, forex, inflation, interest rates, money and credit, external trade,
 remittances and reserves, digital payments, Census 2022 districts, EPB export receipts and
 the Dhaka Stock Exchange. Collected from Bangladesh Bank, BBS, NBR, EPB, DSE and other
-official publishers, validated, and served from our own Postgres.
+official publishers, validated in a Python ingestion pipeline, and served from Cloudflare
+D1 at the edge.
 
-- Website: **https://bangladatahub.com** (docs: `/docs`, status: `/status`)
-- API: **https://api.bangladatahub.com** — e.g.
-  `curl -H "X-API-Key: <key>" https://api.bangladatahub.com/v1/series/inflation.cpi.national.yoy/latest`
+- Website (live): **https://bangladatahub.amaanjbutt.workers.dev**
+- API (live): **https://bangladatahub-api.amaanjbutt.workers.dev** — e.g.
+  `curl -H "X-API-Key: <key>" https://bangladatahub-api.amaanjbutt.workers.dev/v1/series/inflation.cpi.national.yoy/latest`
+- Intended domains: `bangladatahub.com` / `api.bangladatahub.com` (attach the zone and
+  Worker routes; see [`docs/cloudflare.md`](docs/cloudflare.md))
 
 ## Repository
 
 ```
-backend/     FastAPI API, ingestion framework + jobs, Postgres schema, operator scripts, tests
+backend/     Python ingestion + FastAPI reference API, Postgres schema, operator scripts, tests
+cloudflare/  Cloudflare API Worker, D1 schema, cron trigger (the live public API)
 frontend/    the website — TanStack Start (SSR) on Cloudflare Workers, markdown docs/blog CMS
 ops/         deploy, Caddy, Cloudflare Relay/R2, ingestion workflows, SEO scripts
 docs/        internal docs: architecture, ingestion, operations, data quality, rules, decisions
-.github/     CI only (tests, lint, typecheck, build, secret scan)
+.github/     CI and the `Ingest` GitHub Actions workflow (heavy Python jobs)
 ```
 
 **AI agents and new contributors: read [`AGENTS.md`](./AGENTS.md) first.**

@@ -156,6 +156,280 @@ function historyFloor(caller: Caller): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// Accounts, sessions and API keys (free-tier self-serve on D1)
+// ---------------------------------------------------------------------------
+
+const PLAN_LIMITS: Record<string, { per_min: number; per_day: number; credits: number | null }> = {
+  free: { per_min: 10, per_day: 500, credits: 500 },
+  developer: { per_min: 60, per_day: 10000, credits: null },
+  pro: { per_min: 300, per_day: 100000, credits: null },
+  business: { per_min: 600, per_day: 500000, credits: null },
+};
+
+function callerFromUser(row: Row): Caller {
+  const raw = String(row.plan || "free").toLowerCase();
+  const plan = raw === "basic" ? "developer" : raw in PLAN_LIMITS ? raw : "free";
+  return {
+    userId: String(row.user_id ?? row.id),
+    plan,
+    historyYears: PLAN_HISTORY[plan],
+    pro: plan === "pro" || plan === "business",
+  };
+}
+
+function b64(bytes: Uint8Array): string {
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s);
+}
+
+function unb64(value: string): Uint8Array {
+  const bin = atob(value);
+  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+}
+
+function b64url(bytes: Uint8Array): string {
+  return b64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function pbkdf2(password: string, salt: Uint8Array, iterations: number): Promise<Uint8Array> {
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations, hash: "SHA-256" }, key, 256,
+  );
+  return new Uint8Array(bits);
+}
+
+const PBKDF2_ITERATIONS = 100000;
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const dk = await pbkdf2(password, salt, PBKDF2_ITERATIONS);
+  return `pbkdf2_sha256$${PBKDF2_ITERATIONS}$${b64(salt)}$${b64(dk)}`;
+}
+
+async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  try {
+    const [algo, iters, saltB64, dkB64] = stored.split("$");
+    if (algo !== "pbkdf2_sha256") return false;
+    // Cloudflare WebCrypto rejects >100k iterations. Old Python hashes at
+    // 200k must be reset (the API key still works; only dashboard login needs it).
+    if (Number(iters) > PBKDF2_ITERATIONS) return false;
+    const expected = unb64(dkB64);
+    const got = await pbkdf2(password, unb64(saltB64), Number(iters));
+    if (got.length !== expected.length) return false;
+    let diff = 0;
+    for (let i = 0; i < got.length; i++) diff |= got[i] ^ expected[i];
+    return diff === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function createSession(env: Env, userId: string): Promise<string> {
+  const token = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  const now = new Date().toISOString();
+  const expires = new Date(Date.now() + 30 * 86400000).toISOString();
+  await env.DB.prepare(
+    "INSERT INTO sessions (token_hash, user_id, expires_at, created_at) VALUES (?,?,?,?)",
+  ).bind(await sha256Hex(token), userId, expires, now).run();
+  return token;
+}
+
+async function authenticateSessionOrKey(req: Request, env: Env): Promise<Caller> {
+  const session = req.headers.get("X-Session-Token");
+  if (session) {
+    const row = await env.DB.prepare(
+      `SELECT u.id AS user_id, u.plan
+         FROM sessions s JOIN users u ON u.id = s.user_id
+        WHERE s.token_hash = ? AND s.expires_at > ?`,
+    ).bind(await sha256Hex(session), new Date().toISOString()).first<Row>();
+    if (!row) throw new HttpError(401, "invalid or expired session");
+    return callerFromUser(row);
+  }
+  return (await authenticate(req, env, true))!;
+}
+
+async function signup(req: Request, env: Env): Promise<Response> {
+  const body = await req.json<{ email?: string; password?: string }>().catch(() => ({}));
+  const email = String(body.email || "").trim().toLowerCase();
+  const password = String(body.password || "");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new HttpError(422, "a valid email is required");
+  if (password.length < 8) throw new HttpError(422, "password must be at least 8 characters");
+
+  const ip = req.headers.get("CF-Connecting-IP") || "unknown";
+  const day = today();
+  const hit = await env.DB.prepare(
+    `INSERT INTO signup_ips (ip, day, count) VALUES (?,?,1)
+     ON CONFLICT(ip, day) DO UPDATE SET count = count + 1 RETURNING count`,
+  ).bind(ip, day).first<Row>();
+  if (Number(hit?.count || 0) > 20) throw new HttpError(429, "too many signups from this address; try again tomorrow");
+
+  const existing = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+  if (existing) throw new HttpError(409, "an account already exists for this email; sign in instead");
+
+  const userId = crypto.randomUUID();
+  const now = new Date().toISOString();
+  const period = `${day.slice(0, 7)}-01`;
+  await env.DB.prepare(
+    `INSERT INTO users
+       (id, email, created_at, plan, subscription_status, credits_remaining, credits_period, password_hash)
+     VALUES (?,?,?,?,?,?,?,?)`,
+  ).bind(userId, email, now, "free", "active", 500, period, await hashPassword(password)).run();
+
+  const plaintext = `bd_live_${b64url(crypto.getRandomValues(new Uint8Array(32)))}`;
+  const prefix = `${plaintext.slice(0, 16)}…`;
+  await env.DB.prepare(
+    `INSERT INTO api_keys (key_hash, user_id, label, created_at, id, key_prefix)
+     VALUES (?,?,?,?,?,?)`,
+  ).bind(await sha256Hex(plaintext), userId, "free signup", now, crypto.randomUUID(), prefix).run();
+
+  const token = await createSession(env, userId);
+  return json({
+    success: true,
+    session_token: token,
+    email,
+    plan: "free",
+    api_key: plaintext,
+    note: "store this key now — it is shown only once",
+  }, 201);
+}
+
+async function login(req: Request, env: Env): Promise<Response> {
+  const body = await req.json<{ email?: string; password?: string }>().catch(() => ({}));
+  const email = String(body.email || "").trim().toLowerCase();
+  const row = await env.DB.prepare("SELECT id, password_hash FROM users WHERE email = ?").bind(email).first<Row>();
+  if (!row || !(await verifyPassword(String(body.password || ""), String(row.password_hash || "")))) {
+    throw new HttpError(401, "invalid email or password");
+  }
+  return json({ success: true, session_token: await createSession(env, String(row.id)), email });
+}
+
+async function logout(req: Request, env: Env): Promise<Response> {
+  const body = await req.json<{ session_token?: string }>().catch(() => ({}));
+  if (body.session_token) {
+    await env.DB.prepare("DELETE FROM sessions WHERE token_hash = ?").bind(await sha256Hex(body.session_token)).run();
+  }
+  return json({ success: true });
+}
+
+async function changePassword(req: Request, env: Env): Promise<Response> {
+  const caller = await authenticateSessionOrKey(req, env);
+  const body = await req.json<{ current_password?: string; new_password?: string }>().catch(() => ({}));
+  if (String(body.new_password || "").length < 8) {
+    throw new HttpError(422, "new password must be at least 8 characters");
+  }
+  const row = await env.DB.prepare("SELECT password_hash FROM users WHERE id = ?").bind(caller.userId).first<Row>();
+  if (!row || !(await verifyPassword(String(body.current_password || ""), String(row.password_hash || "")))) {
+    throw new HttpError(401, "current password is incorrect");
+  }
+  await env.DB.prepare("UPDATE users SET password_hash = ? WHERE id = ?")
+    .bind(await hashPassword(String(body.new_password)), caller.userId).run();
+  return json({ success: true });
+}
+
+async function account(req: Request, env: Env): Promise<Response> {
+  const caller = await authenticateSessionOrKey(req, env);
+  if (req.method === "PATCH") {
+    const body = await req.json<{ name?: string | null; company?: string | null }>().catch(() => ({}));
+    const updates: string[] = [];
+    const params: any[] = [];
+    for (const key of ["name", "company"] as const) {
+      if (key in body) {
+        updates.push(`${key} = ?`);
+        params.push(String(body[key] ?? "").trim().slice(0, 120) || null);
+      }
+    }
+    if (updates.length) {
+      await env.DB.prepare(`UPDATE users SET ${updates.join(", ")} WHERE id = ?`)
+        .bind(...params, caller.userId).run();
+    }
+    return json({ success: true });
+  }
+  const u = await env.DB.prepare(
+    "SELECT email, plan, subscription_status, period_end, name, company FROM users WHERE id = ?",
+  ).bind(caller.userId).first<Row>();
+  const keys = await env.DB.prepare(
+    "SELECT count(*) AS c FROM api_keys WHERE user_id = ? AND revoked_at IS NULL",
+  ).bind(caller.userId).first<Row>();
+  return json({
+    success: true,
+    email: u?.email ?? null,
+    name: u?.name ?? null,
+    company: u?.company ?? null,
+    plan: caller.plan,
+    subscription_status: u?.subscription_status ?? null,
+    period_end: u?.period_end ?? null,
+    active_keys: Number(keys?.c || 0),
+    active_webhooks: 0,
+  });
+}
+
+async function keys(req: Request, env: Env, keyId?: string): Promise<Response> {
+  const caller = await authenticateSessionOrKey(req, env);
+  if (req.method === "GET") {
+    const rows = await env.DB.prepare(
+      `SELECT id, key_prefix, label, created_at, revoked_at, last_used_at
+         FROM api_keys WHERE user_id = ? ORDER BY created_at DESC`,
+    ).bind(caller.userId).all<Row>();
+    return json({ success: true, data: rows.results || [], count: rows.results?.length || 0 });
+  }
+  if (req.method === "DELETE") {
+    if (!keyId) throw new HttpError(422, "key id is required");
+    await env.DB.prepare(
+      "UPDATE api_keys SET revoked_at = ? WHERE id = ? AND user_id = ? AND revoked_at IS NULL",
+    ).bind(new Date().toISOString(), keyId, caller.userId).run();
+    return json({ success: true, revoked: keyId });
+  }
+  const active = await env.DB.prepare(
+    "SELECT count(*) AS c FROM api_keys WHERE user_id = ? AND revoked_at IS NULL",
+  ).bind(caller.userId).first<Row>();
+  if (Number(active?.c || 0) >= 3) throw new HttpError(403, "key limit reached (3); revoke one first");
+  const body = await req.json<{ label?: string }>().catch(() => ({}));
+  const plaintext = `bd_live_${b64url(crypto.getRandomValues(new Uint8Array(32)))}`;
+  const prefix = `${plaintext.slice(0, 16)}…`;
+  await env.DB.prepare(
+    "INSERT INTO api_keys (key_hash, user_id, label, created_at, id, key_prefix) VALUES (?,?,?,?,?,?)",
+  ).bind(await sha256Hex(plaintext), caller.userId, body.label ?? null, new Date().toISOString(),
+    crypto.randomUUID(), prefix).run();
+  return json({
+    success: true, api_key: plaintext, key_prefix: prefix,
+    note: "store this key now — it is shown only once",
+  }, 201);
+}
+
+async function usage(req: Request, env: Env, url: URL): Promise<Response> {
+  const caller = await authenticateSessionOrKey(req, env);
+  if (url.pathname.endsWith("/history")) return json({ success: true, data: [], count: 0 });
+  if (url.pathname.endsWith("/endpoints")) {
+    return json({ success: true, days: Number(url.searchParams.get("days") || 30), data: [], count: 0 });
+  }
+  const limits = PLAN_LIMITS[caller.plan];
+  const u = await env.DB.prepare("SELECT credits_remaining, credits_period FROM users WHERE id = ?")
+    .bind(caller.userId).first<Row>();
+  return json({
+    success: true,
+    plan: caller.plan,
+    limits: {
+      per_min: limits.per_min,
+      per_day: limits.per_day,
+      history_years: caller.historyYears,
+      credits: limits.credits,
+    },
+    usage: {
+      minute_used: 0,
+      minute_remaining: limits.per_min,
+      day_used: 0,
+      day_remaining: limits.per_day,
+      credits_remaining: limits.credits === null ? null : Number(u?.credits_remaining ?? limits.credits),
+      credits_reset: limits.credits === null ? null : `${today().slice(0, 7)}-01`,
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Series transforms (ported from backend/app/services/transforms.py)
 // ---------------------------------------------------------------------------
 
@@ -1328,12 +1602,39 @@ export default {
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
     try {
+      let m: RegExpMatchArray | null = null;
       if (path === "/" || path === "/health") {
         return json({ success: true, service: "bangladatahub-api", runtime: "cloudflare-workers", d1: true });
       }
+      if (path === "/auth/signup" && request.method === "POST") return await signup(request, env);
+      if (path === "/auth/login" && request.method === "POST") return await login(request, env);
+      if (path === "/auth/logout" && request.method === "POST") return await logout(request, env);
+      if (path === "/auth/change-password" && request.method === "POST") return await changePassword(request, env);
+      if (path === "/auth/google/config") return json({ enabled: false });
+      if (path === "/auth/set-password" && request.method === "POST") return fail(404, "no pending key claim");
+      if (path === "/v1/account") return await account(request, env);
+      if (path === "/v1/keys") return await keys(request, env);
+      m = path.match(/^\/v1\/keys\/(.+)$/);
+      if (m) return await keys(request, env, decodeURIComponent(m[1]));
+      if (path === "/v1/usage" || path === "/v1/usage/history" || path === "/v1/usage/endpoints") {
+        return await usage(request, env, url);
+      }
+      if (path === "/v1/webhooks" && request.method === "GET") {
+        return json({ success: true, data: [], count: 0 });
+      }
+      if (path === "/v1/webhooks" && request.method === "POST") {
+        return fail(501, "webhooks are not available on the edge deployment yet");
+      }
+      m = path.match(/^\/v1\/webhooks\/(.+)$/);
+      if (m && request.method === "DELETE") return json({ success: true, deleted: decodeURIComponent(m[1]) });
+      if (path === "/v1/billing/portal") {
+        return fail(501, "billing portal is not available on the edge deployment yet");
+      }
+      m = path.match(/^\/v1\/account\/key\/(.+)$/);
+      if (m) return fail(404, "no pending key claim");
       if (path === "/v1/status") return await status(env);
       if (path === "/v1/catalog") return await catalogList(env, url);
-      let m = path.match(/^\/v1\/catalog\/(.+)$/);
+      m = path.match(/^\/v1\/catalog\/(.+)$/);
       if (m) {
         const row = await seriesById(env, decodeURIComponent(m[1]));
         if (!row) return fail(404, "unknown series");

@@ -49,7 +49,7 @@ def hash_key(plaintext: str) -> str:
 
 import base64  # noqa: E402
 
-_PBKDF2_ITER = 200_000
+_PBKDF2_ITER = 100_000
 
 
 def hash_password(password: str) -> str:

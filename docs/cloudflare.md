@@ -105,6 +105,24 @@ DATABASE_URL=... python -m scripts.export_d1
 rows each) so no single D1 request is too large. The seed directory is
 gitignored.
 
+## Auth and accounts
+
+The Worker implements the free-tier self-serve flow on D1:
+
+- `POST /auth/signup`, `/auth/login`, `/auth/logout`, `/auth/change-password`
+- `GET/PATCH /v1/account`, `GET/POST /v1/keys`, `DELETE /v1/keys/{id}`
+- `GET /v1/usage`, `/v1/usage/history`, `/v1/usage/endpoints` (usage counters are
+  zero until request logging is added)
+
+Passwords use PBKDF2-SHA256 at **100,000 iterations**, which is Cloudflare
+WebCrypto's cap. Python's verifier accepts both 100k and older 200k hashes; the
+Worker can only verify 100k, so a pre-existing 200k dashboard password needs a
+reset. API-key auth is unaffected.
+
+Not ported yet: paid checkout/billing portal, Google OAuth, webhooks delivery,
+and Redis-backed rate limiting. `/auth/google/config` returns `{enabled:false}`;
+billing/webhook mutations return a clear 501.
+
 ## Cron Trigger
 
 The API Worker runs every 30 minutes. It checks the latest observation date; if
