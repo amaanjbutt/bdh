@@ -80,8 +80,15 @@ def post(url: str, token: str, payload: dict) -> dict:
         timeout=120,
     )
     if resp.status_code >= 300:
-        raise SystemExit(f"sync failed ({resp.status_code}): {resp.text[:500]}")
+        text = resp.text
+        if "free tier daily row write limit" in text:
+            raise SyncLimitReached(text)
+        raise SystemExit(f"sync failed ({resp.status_code}): {text[:500]}")
     return resp.json()
+
+
+class SyncLimitReached(Exception):
+    """D1's free-tier daily write budget is exhausted; resume after midnight UTC."""
 
 
 def state(url: str, token: str) -> str | None:
@@ -119,7 +126,18 @@ def main() -> None:
     watermark = datetime.now(timezone.utc).isoformat()
 
     with psycopg.connect(dsn) as conn:
-        series = fetch(conn, f"SELECT {', '.join(SERIES_COLS)} FROM series ORDER BY id")
+        if args.full or since.startswith("2000-"):
+            series = fetch(conn, f"SELECT {', '.join(SERIES_COLS)} FROM series ORDER BY id")
+        else:
+            # Only series touched since the watermark. Sending all 3,596 every
+            # run costs ~18k D1 writes before a single observation.
+            since_day = since[:10]
+            series = fetch(
+                conn,
+                f"SELECT {', '.join(SERIES_COLS)} FROM series "
+                "WHERE last_date >= %s OR first_date >= %s ORDER BY id",
+                (since_day, since_day),
+            )
         observations = fetch(
             conn,
             f"SELECT {', '.join(OBS_COLS)} FROM observations "
@@ -152,39 +170,44 @@ def main() -> None:
         f"runs={len(runs)} funds={len(funds)} dam={len(dam)} prices={len(prices)}"
     )
 
-    # Series metadata is small enough to send every run; it keeps new/changed
-    # names, tiers and canonical ids in step without an updated_at column.
-    for batch in chunks(series, args.batch):
-        post(url, token, {"series": batch})
+    # Series metadata is sent only when it changed (or on --full); sending all
+    # 3,596 every run costs ~18k D1 writes before a single observation.
+    try:
+        for batch in chunks(series, args.batch):
+            post(url, token, {"series": batch})
 
-    for batch in chunks(observations, args.batch):
-        post(url, token, {"observations": batch})
+        for batch in chunks(observations, args.batch):
+            post(url, token, {"observations": batch})
 
-    for batch in chunks(revisions, args.batch):
-        post(url, token, {"revisions": batch})
+        for batch in chunks(revisions, args.batch):
+            post(url, token, {"revisions": batch})
 
-    for batch in chunks(runs, args.batch):
-        post(url, token, {"ingestion_runs": batch})
+        for batch in chunks(runs, args.batch):
+            post(url, token, {"ingestion_runs": batch})
 
-    for batch in chunks(funds, args.batch):
-        post(url, token, {"fund_registry": batch})
-    for batch in chunks(dam, args.batch):
-        post(url, token, {"dam_prices": batch})
-    for batch in chunks(securities, args.batch):
-        post(url, token, {"dse_securities": batch})
-    for batch in chunks(prices, args.batch):
-        post(url, token, {"dse_prices": batch})
-    for batch in chunks(indices, args.batch):
-        post(url, token, {"dse_indices": batch})
-    for batch in chunks(daily, args.batch):
-        post(url, token, {"dse_market_daily": batch})
-    for batch in chunks(calendar, args.batch):
-        post(url, token, {"release_calendar": batch})
-    for batch in chunks(auctions, args.batch):
-        post(url, token, {"auctions": batch})
+        for batch in chunks(funds, args.batch):
+            post(url, token, {"fund_registry": batch})
+        for batch in chunks(dam, args.batch):
+            post(url, token, {"dam_prices": batch})
+        for batch in chunks(securities, args.batch):
+            post(url, token, {"dse_securities": batch})
+        for batch in chunks(prices, args.batch):
+            post(url, token, {"dse_prices": batch})
+        for batch in chunks(indices, args.batch):
+            post(url, token, {"dse_indices": batch})
+        for batch in chunks(daily, args.batch):
+            post(url, token, {"dse_market_daily": batch})
+        for batch in chunks(calendar, args.batch):
+            post(url, token, {"release_calendar": batch})
+        for batch in chunks(auctions, args.batch):
+            post(url, token, {"auctions": batch})
 
-    # Advance the watermark only after every batch above has succeeded.
-    post(url, token, {"final": True, "watermark": watermark})
+        # Advance the watermark only after every batch above has succeeded.
+        post(url, token, {"final": True, "watermark": watermark})
+    except SyncLimitReached as exc:
+        print(f"D1 free-tier daily write limit reached; watermark unchanged ({exc})")
+        print("the next run resumes from the same watermark after midnight UTC")
+        return
     print(f"synced; watermark={watermark}")
 
 

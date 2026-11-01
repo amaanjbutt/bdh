@@ -161,7 +161,7 @@ class LrGlobalAdapter(Adapter):
         out = []
         for code in self.funds:
             url = f"http://lrglobalbd.com/wp-content/docs/NAV/{code}_NAV.pdf"
-            content = http_client.get(url, timeout=120).content
+            content = http_client.get(url, timeout=180).content
             if content[:4] != b"%PDF":
                 raise ValueError(f"{code}: not a PDF")
             out.append(self.file(f"{code}.pdf", content))

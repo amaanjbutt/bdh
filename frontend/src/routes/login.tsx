@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { Eyebrow, Panel, PanelHeadline, PanelInner } from "@/components/site/panel";
-import { GoogleButton, OrDivider } from "@/components/site/google-button";
 import { login } from "@/lib/bangladata/auth.functions";
 
 export const Route = createFileRoute("/login")({
@@ -56,12 +55,7 @@ function Login() {
           <Eyebrow>Sign in</Eyebrow>
           <PanelHeadline className="mt-6">Welcome back.</PanelHeadline>
 
-          <div className="mt-8 max-w-[420px]">
-            <GoogleButton label="Sign in with Google" />
-            <OrDivider />
-          </div>
-
-          <div className="max-w-[420px] space-y-3">
+          <div className="mt-8 max-w-[420px] space-y-3">
             <input
               type="email"
               value={email}

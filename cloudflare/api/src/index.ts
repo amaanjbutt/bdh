@@ -1522,9 +1522,10 @@ async function adminSync(req: Request, env: Env): Promise<Response> {
     statements.push(env.DB.prepare("DELETE FROM series WHERE id = ?").bind(id));
   }
 
-  // D1 batch limit is 100 statements; keep a safety margin.
-  for (let i = 0; i < statements.length; i += 50) {
-    await env.DB.batch(statements.slice(i, i + 50));
+  // D1 limits a batch to 100 bound parameters. The widest statement here has
+  // 18 columns, so 5 statements (90 params) is the safe ceiling.
+  for (let i = 0; i < statements.length; i += 5) {
+    await env.DB.batch(statements.slice(i, i + 5));
   }
   if (body.final && body.watermark) {
     await env.DB.prepare(
