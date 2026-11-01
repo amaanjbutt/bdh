@@ -53,7 +53,7 @@ Durable knowledge only. Live state comes from the system itself (`/v1/status`,
 - [`../backend/scripts/README.md`](../backend/scripts/README.md) — operator scripts, including D1/R2 sync
 - [`../frontend/README.md`](../frontend/README.md) — routes, data layer, service binding, deploy
 - [`../ops/README.md`](../ops/README.md) — legacy VPS/Caddy, relay, SEO
-- [`../.github/workflows/ingest.yml`](../.github/workflows/ingest.yml) — the heavy ingestion runner
+- [`../.github/workflows/README.md`](../.github/workflows/README.md) — CI vs the `Ingest` runner
 
 **Keeping docs true:** when a change alters behaviour described here, update the doc in the
 same commit. Keep `AGENTS.md` a map, not a manual. Deep procedures go in
