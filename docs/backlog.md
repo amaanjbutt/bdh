@@ -55,9 +55,13 @@ Open work, roughly in priority order.
     `dq_findings` on `/status`.
 15. ~~**Deploy.**~~ Done 2026-11-01: `bangladatahub-api` (Worker + D1) and
     `bangladatahub` (website) are live on `*.amaanjbutt.workers.dev`; D1 seeded with
-    3,596 series / 118,991 observations; `Ingest` workflow + R2 snapshot wired.
+    3,596 series / 118,991 observations; `Ingest` workflow + R2 snapshot wired; free-tier
+    auth/account/API keys and the dashboard work on D1.
     Remaining: add the `bangladatahub.com` zone and the two Worker routes; set
-    `GITHUB_TOKEN` on the API Worker to enable the cron watchdog dispatch.
+    `GITHUB_TOKEN` on the API Worker to enable the cron watchdog; upgrade to Workers
+    Paid for D1 write/CPU headroom (the free tier's 100k rows/day was exhausted by the
+    initial seed and resumes at midnight UTC); port paid checkout, Google OAuth, webhook
+    delivery and Redis-equivalent rate limiting.
 16. ~~**CI.**~~ Green on 2026-10-31 (`repo`, `backend`, `frontend`).
 
 ## Frontend

@@ -123,6 +123,22 @@ Not ported yet: paid checkout/billing portal, Google OAuth, webhooks delivery,
 and Redis-backed rate limiting. `/auth/google/config` returns `{enabled:false}`;
 billing/webhook mutations return a clear 501.
 
+## Current limits
+
+- **D1 free tier** allows 100,000 rows written per day. The initial 118,991-row
+  seed plus the first catch-up sync hit that cap. `sync_d1.py` detects the
+  `free tier daily row write limit` error, leaves the watermark unchanged, and
+  exits successfully; the next run resumes after midnight UTC. For production
+  headroom, upgrade the account to Workers Paid (D1 paid limits).
+- **Cloudflare Workers free tier** has a 10 ms CPU limit; this Worker's PBKDF2
+  (100k iterations) and large status queries assume the paid 30 s limit. Use
+  Workers Paid for the auth-enabled deployment.
+- The **cron watchdog** is dormant until `GITHUB_TOKEN` is set on the API
+  Worker. GitHub's own `schedule` still runs the daily ingestion.
+- **Custom domain**: `bangladatahub.com` is not in this Cloudflare account, so
+  the live URLs are `*.amaanjbutt.workers.dev` until the zone and routes are
+  added.
+
 ## Cron Trigger
 
 The API Worker runs every 30 minutes. It checks the latest observation date; if
