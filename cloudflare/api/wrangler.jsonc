@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bangladatahub-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-20",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bangladatahub",
+      "database_id": "2de61d47-c067-4d35-83de-a88d05774eae"
+    }
+  ],
+  "vars": {
+    "PUBLIC_BASE": "https://bangladatahub-api.amaanjbutt.workers.dev",
+    "GITHUB_REPO": "amaanjbutt/bdh",
+    "GITHUB_WORKFLOW": "ingest.yml"
+  },
+  "triggers": {
+    "crons": ["*/30 * * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

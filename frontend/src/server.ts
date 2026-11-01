@@ -109,6 +109,10 @@ function hasWaitUntil(ctx: unknown): ctx is { waitUntil: (p: Promise<unknown>) =
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const url = new URL(request.url);
+    // Nitro's Cloudflare handler exposes the real bindings on globalThis.__env__;
+    // the `env` argument passed through TanStack Start is not the binding map.
+    const cfEnv = (globalThis as { __env__?: unknown }).__env__ ?? env;
+    (globalThis as unknown as { __BDH_ENV?: unknown }).__BDH_ENV = cfEnv;
     const cacheable = isCacheableRequest(request, url);
     const cache = edgeCache();
 

@@ -88,8 +88,9 @@ date. Raw files are archived before parsing; revisions are recorded in
 
 ## Shipping changes
 
-Branch → PR → CI must pass → merge to `main` → deploy with `ops/deploy/deploy_from_pc.sh`
-(API + website + ingestion mirror). See [`docs/operations.md`](docs/operations.md).
+Branch → PR → CI must pass → merge to `main` → deploy the Cloudflare Workers
+(`cloudflare/api` and `frontend/.output/server`); the `Ingest` GitHub Actions workflow
+refreshes Postgres/R2 and syncs D1. See [`docs/cloudflare.md`](docs/cloudflare.md).
 
 ## License
 

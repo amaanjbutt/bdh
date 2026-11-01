@@ -28,10 +28,15 @@ This file is the map. Read it fully, then open only the doc that answers your qu
 
 | Piece | Runs on | Deployed by |
 |---|---|---|
-| Website | Cloudflare Workers (free tier) | `ops/deploy/deploy_from_pc.sh web` |
-| API, scheduler, Postgres, Redis, backups, Caddy | VPS `/opt/bangladata` | `ops/deploy/deploy_from_pc.sh vps` |
-| Ingestion from publishers that block datacenter IPs | GitHub Actions in the public ingestion repo, writing over a restricted SSH tunnel | `deploy_from_pc.sh ingest` |
+| Website | Cloudflare Worker `bangladatahub` | `wrangler deploy` from `frontend/.output/server` |
+| Public API | Cloudflare Worker `bangladatahub-api` + D1 | `wrangler deploy` from `cloudflare/api` |
+| Heavy ingestion (PDF/Excel/OCR) | GitHub Actions `Ingest` workflow | `.github/workflows/ingest.yml` |
+| Durable ingestion state | R2 `postgres/latest.dump` | the workflow uploads after each run |
+| Schedule / stale watchdog | Cloudflare Cron Trigger on the API Worker | `cloudflare/api/wrangler.jsonc` |
 | Browser-only downloads (BB F5-protected files) | a workstation or a runner with Chrome, via `ingestion/browser_fetch.py` | manual / GHA |
+
+No VPS is required. `docs/cloudflare.md` is the deployment map; `docs/operations.md`
+keeps the legacy VPS path as an alternative.
 
 ## Commands
 

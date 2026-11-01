@@ -35,7 +35,32 @@ The compose stack publishes 8000.
 | `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAILS` | API | transactional email and admin access |
 | `BANGLADATA_API_BASE`, `BANGLADATA_API_KEY` | frontend | server-side API calls |
 
-Secrets live in `secrets.md` on the owner's machine and in the VPS `.env`; never commit them.
+Secrets live in `secrets.md` on the owner's machine and in GitHub/Cloudflare secret stores; never commit them.
+
+## Cloudflare (primary)
+
+The live product is Cloudflare Workers + D1 + R2; the Python jobs run on GitHub
+Actions. The full map, URLs, deploy commands and data flow are in
+[`cloudflare.md`](./cloudflare.md). The short version:
+
+```bash
+cd cloudflare/api && npx wrangler deploy          # API + D1 + cron
+cd frontend && npm run build
+cd .output/server && npx wrangler deploy \
+  --var BANGLADATA_API_BASE:https://bangladatahub-api.amaanjbutt.workers.dev \
+  --var BANGLADATA_PUBLIC_API_BASE:https://bangladatahub-api.amaanjbutt.workers.dev
+```
+
+The `Ingest` GitHub Actions workflow (`01:30 UTC` daily) restores the Postgres
+snapshot from R2, runs the Python jobs, uploads the new snapshot, and syncs
+changed rows into D1. A Cloudflare Cron Trigger (`*/30 * * * *`) dispatches the
+same workflow if data goes stale and `GITHUB_TOKEN` is configured.
+
+## VPS (legacy / alternative)
+
+The VPS path below is kept as an alternative for deployments that need a
+persistent Postgres or browser-based ingestion. It is not used by the live
+Cloudflare deployment.
 
 ## VPS layout
 

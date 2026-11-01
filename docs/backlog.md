@@ -53,9 +53,11 @@ Open work, roughly in priority order.
     bundle.
 14. **Data-quality job.** Schedule `data_quality` (spike/unit checks) and surface
     `dq_findings` on `/status`.
-15. **Deploy.** Set `VPS_HOST`, install the deploy key, run `deploy_from_pc.sh vps` and
-    `web`, then point `api.bangladatahub.com` at the VPS and `bangladatahub.com` at the
-    Worker.
+15. ~~**Deploy.**~~ Done 2026-11-01: `bangladatahub-api` (Worker + D1) and
+    `bangladatahub` (website) are live on `*.amaanjbutt.workers.dev`; D1 seeded with
+    3,596 series / 118,991 observations; `Ingest` workflow + R2 snapshot wired.
+    Remaining: add the `bangladatahub.com` zone and the two Worker routes; set
+    `GITHUB_TOKEN` on the API Worker to enable the cron watchdog dispatch.
 16. ~~**CI.**~~ Green on 2026-10-31 (`repo`, `backend`, `frontend`).
 
 ## Frontend

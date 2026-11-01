@@ -19,6 +19,9 @@ backups/
 *.dump.gz
 .deploy_bak/
 vintage_sources/
+cloudflare/api/seed/
+cloudflare/api/.wrangler/
+.wrangler/
 
 # --- python ---
 __pycache__/

@@ -10,7 +10,8 @@ Durable knowledge only. Live state comes from the system itself (`/v1/status`,
 | [`product.md`](./product.md) | What BanglaDataHub is, who it's for, coverage per module, plans and positioning |
 | [`architecture.md`](./architecture.md) | Components, data model, request + ingestion flow, frontend rendering, delivery |
 | [`ingestion.md`](./ingestion.md) | All seventeen jobs: source, schedule, tables; how a run works |
-| [`operations.md`](./operations.md) | Local stack, deploy, configuration, backups, incidents, R2 |
+| [`operations.md`](./operations.md) | Local stack, configuration, backups, incidents, R2; Cloudflare and legacy VPS paths |
+| [`cloudflare.md`](./cloudflare.md) | Live Cloudflare architecture: Workers, D1, R2, cron, GitHub Actions ingestion, deploy commands |
 | [`data-quality.md`](./data-quality.md) | Gates, source-specific checks, annotations, quarantine |
 | [`rules.md`](./rules.md) | Every hard rule |
 | [`decisions.md`](./decisions.md) | Owner decisions (dated) — don't reopen them |

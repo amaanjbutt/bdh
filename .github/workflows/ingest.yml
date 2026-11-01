@@ -1,0 +1,142 @@
+name: Ingest
+
+# Heavy Python ingestion runs here, not in a Worker: PDF/Excel parsing, browser
+# TLS and OCR need a real Python runtime. The runner restores the last Postgres
+# snapshot from R2, runs the jobs, uploads the new snapshot, then syncs the
+# changed rows into D1 for the Cloudflare API.
+#
+# Set these repository secrets (values in secrets.md):
+#   R2_ENDPOINT, R2_BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_REGION
+#   D1_SYNC_URL, D1_SYNC_TOKEN
+# Optional: DATABASE_URL (a persistent Postgres). If absent, the R2 snapshot is
+# the source of truth and the service container is ephemeral.
+
+on:
+  schedule:
+    - cron: "30 1 * * *"   # 07:30 Asia/Dhaka
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: "Comma-separated ingestion jobs"
+        required: false
+        default: "bb_web,bb_workbook,bbs_cpi,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators"
+      full_sync:
+        description: "Send the whole Postgres snapshot to D1 (slower)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: bangladata
+          POSTGRES_PASSWORD: bangladata
+          POSTGRES_DB: bangladata
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U bangladata" --health-interval 5s --health-timeout 3s --health-retries 30
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://bangladata:bangladata@localhost:5432/bangladata' }}
+      REDIS_URL: redis://localhost:6379/0
+      RAW_ARCHIVE_DIR: /tmp/raw
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_REGION: ${{ secrets.R2_REGION }}
+      D1_SYNC_URL: ${{ secrets.D1_SYNC_URL }}
+      D1_SYNC_TOKEN: ${{ secrets.D1_SYNC_TOKEN }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install
+        run: pip install -q -r requirements.txt
+
+      - name: Restore Postgres snapshot (or initialise a fresh store)
+        id: restore
+        run: |
+          set -e
+          if [ -n "${{ secrets.DATABASE_URL }}" ]; then
+            echo "persistent=true" >> "$GITHUB_OUTPUT"
+            echo "using the persistent DATABASE_URL; skipping the R2 snapshot"
+            python -m db.init
+            exit 0
+          fi
+          echo "persistent=false" >> "$GITHUB_OUTPUT"
+          if python -m scripts.r2_snapshot download /tmp/bd.dump; then
+            pg_restore --clean --if-exists --no-owner --no-privileges -d "$DATABASE_URL" /tmp/bd.dump
+            echo "restored the R2 snapshot"
+          else
+            echo "no snapshot yet; initialising a fresh Postgres"
+          fi
+          python -m db.init
+
+      - name: Run ingestion jobs
+        id: jobs
+        shell: bash
+        run: |
+          set +e
+          status=0
+          IFS=',' read -ra JOBS <<< "${{ inputs.jobs || 'bb_web,bb_workbook,bbs_cpi,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators' }}"
+          for job in "${JOBS[@]}"; do
+            job="$(echo "$job" | xargs)"
+            [ -z "$job" ] && continue
+            echo "::group::$job"
+            python -m ingestion.run "$job" --force
+            rc=$?
+            echo "::endgroup::"
+            if [ $rc -ne 0 ]; then
+              echo "::error::$job failed (rc=$rc)"
+              status=1
+            fi
+          done
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit $status
+
+      - name: Persist the Postgres snapshot
+        if: always() && steps.restore.outputs.persistent != 'true'
+        run: |
+          pg_dump -Fc -d "$DATABASE_URL" -f /tmp/bd.dump
+          python -m scripts.r2_snapshot upload /tmp/bd.dump
+
+      - name: Sync changed rows into D1
+        if: always()
+        run: |
+          if [ -z "$D1_SYNC_TOKEN" ]; then
+            echo "::warning::D1_SYNC_TOKEN is not set; skipping the D1 sync"
+            exit 0
+          fi
+          if [ "${{ inputs.full_sync }}" = "true" ]; then
+            python -m scripts.sync_d1 --full
+          else
+            python -m scripts.sync_d1
+          fi
+
+      - name: Fail the run if any job failed
+        if: steps.jobs.outputs.status != '0'
+        run: |
+          echo "one or more ingestion jobs failed"
+          exit 1

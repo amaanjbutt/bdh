@@ -43,6 +43,25 @@ function base(): string | null {
   return value && value.length > 0 ? value.replace(/\/$/, "") : null;
 }
 
+type ApiBinding = { fetch: (request: Request) => Promise<Response> };
+
+/** Service binding to the API Worker. Worker-to-worker fetches on the same
+ *  workers.dev zone are blocked (Cloudflare 1042), so the site calls the API
+ *  through this binding instead of a public hostname. */
+function apiBinding(): ApiBinding | undefined {
+  return (globalThis as { __BDH_ENV?: { API?: ApiBinding } }).__BDH_ENV?.API;
+}
+
+async function apiFetch(path: string, init: RequestInit): Promise<Response> {
+  const bound = apiBinding();
+  if (bound) {
+    return bound.fetch(new Request(`https://api.internal${path}`, init));
+  }
+  const root = base();
+  if (!root) throw new Error("API base is not configured");
+  return fetch(`${root}${path}`, init);
+}
+
 /**
  * The bangladatahub.com page this server call is rendering, sent as `X-BanglaData-Page` so
  * the API's request log can attribute the site's own traffic per page. During SSR the
@@ -63,7 +82,7 @@ function currentPage(): string | null {
 
 async function call<T>(path: string, keyed: boolean): Promise<T | null> {
   const root = base();
-  if (!root) return null;
+  if (!root && !apiBinding()) return null;
 
   const headers: Record<string, string> = { accept: "application/json" };
   const page = currentPage();
@@ -74,11 +93,11 @@ async function call<T>(path: string, keyed: boolean): Promise<T | null> {
     headers["X-API-Key"] = key;
   }
 
-  // Hard timeout: never let a slow/hung VPS API stall the SSR — the Worker would
+  // Hard timeout: never let a slow/hung API stall the SSR — the Worker would
   // then time out and Cloudflare surfaces a 5xx/522. On abort we return null and
   // the page renders from fixtures / degrades gracefully.
   const attempt = async (): Promise<Response> =>
-    fetch(`${root}${path}`, { headers, signal: AbortSignal.timeout(6000) });
+    apiFetch(path, { headers, signal: AbortSignal.timeout(6000) });
 
   try {
     let res = await attempt();
@@ -107,11 +126,11 @@ export async function keyedFetch<T>(
   init?: { method?: string; body?: unknown },
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
   const root = base();
-  if (!root) return { ok: false, status: 0, data: null };
+  if (!root && !apiBinding()) return { ok: false, status: 0, data: null };
   const headers: Record<string, string> = { accept: "application/json", "X-API-Key": key };
   if (init?.body !== undefined) headers["content-type"] = "application/json";
   try {
-    const res = await fetch(`${root}${path}`, {
+    const res = await apiFetch(path, {
       method: init?.method ?? "GET",
       headers,
       body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
@@ -141,9 +160,9 @@ export async function publicPost<T = Record<string, unknown>>(
   body: unknown,
 ): Promise<{ ok: boolean; status: number; data: T | null; error?: string }> {
   const root = base();
-  if (!root) return { ok: false, status: 0, data: null, error: "Service unavailable." };
+  if (!root && !apiBinding()) return { ok: false, status: 0, data: null, error: "Service unavailable." };
   try {
-    const res = await fetch(`${root}${path}`, {
+    const res = await apiFetch(path, {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
       body: JSON.stringify(body),
@@ -171,9 +190,9 @@ export async function publicGet<T = Record<string, unknown>>(
   path: string,
 ): Promise<{ ok: boolean; status: number; data: T | null; error?: string }> {
   const root = base();
-  if (!root) return { ok: false, status: 0, data: null, error: "Service unavailable." };
+  if (!root && !apiBinding()) return { ok: false, status: 0, data: null, error: "Service unavailable." };
   try {
-    const res = await fetch(`${root}${path}`, { headers: { accept: "application/json" } });
+    const res = await apiFetch(path, { headers: { accept: "application/json" } });
     const parsed = (await res.json().catch(() => null)) as
       | (T & { error?: { message?: string } })
       | null;
@@ -199,14 +218,14 @@ export async function sessionFetch<T>(
   init?: { method?: string; body?: unknown },
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
   const root = base();
-  if (!root) return { ok: false, status: 0, data: null };
+  if (!root && !apiBinding()) return { ok: false, status: 0, data: null };
   const headers: Record<string, string> = {
     accept: "application/json",
     "X-Session-Token": token,
   };
   if (init?.body !== undefined) headers["content-type"] = "application/json";
   try {
-    const res = await fetch(`${root}${path}`, {
+    const res = await apiFetch(path, {
       method: init?.method ?? "GET",
       headers,
       body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,

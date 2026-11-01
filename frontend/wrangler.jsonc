@@ -3,9 +3,13 @@
 //   `wrangler deploy` would create a second worker instead of updating the live `bangladatahub`.
 // - compatibility_date: vite writes today's date, which wrangler can reject as "in the future";
 //   pinning it here replaces the old sed step.
-// Worker variables (PAKDATA_API_BASE, PAKDATA_PUBLIC_API_BASE, PAKDATA_API_KEY) live in the
-// Cloudflare dashboard, not here.
+// Worker variables (BANGLADATA_API_BASE, BANGLADATA_PUBLIC_API_BASE, BANGLADATA_API_KEY)
+// live in the Cloudflare dashboard, not here. `nodejs_compat_populate_process_env` is
+// required: client.server.ts reads process.env at runtime, and without it Cloudflare
+// leaves process.env empty and the site silently falls back to fixtures.
 {
   "name": "bangladatahub",
-  "compatibility_date": "2026-08-20"
+  "compatibility_date": "2026-08-20",
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "services": [{ "binding": "API", "service": "bangladatahub-api" }]
 }
