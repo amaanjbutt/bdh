@@ -67,11 +67,19 @@ class IcbNavJob(IngestionJob):
                 cells = [clean_label(c.get_text(" ", strip=True)) for c in tr.find_all(["td", "th"])]
                 if len(cells) < 4 or cells[0].lower() == "fund name":
                     continue
-                name, nav, market = cells[0], _num(cells[2]), _num(cells[3])
+                name, cost, market = cells[0], _num(cells[2]), _num(cells[3])
+                # `.nav` is the transaction/headline NAV (market or fair value);
+                # `.nav_cost` is the accounting cost NAV. Same convention as every
+                # other AMC adapter.
+                nav = market if market is not None else cost
                 if not name or nav is None:
                     continue
                 slug = slugify(name)
-                for suffix, value, label in (("nav", nav, "NAV"), ("market_price", market, "market price")):
+                for suffix, value, label in (
+                    ("nav", nav, "NAV"),
+                    ("nav_cost", cost if cost is not None and cost != nav else None,
+                     "NAV at cost"),
+                ):
                     if value is None:
                         continue
                     sid = f"funds.icb.{slug}.{suffix}"

@@ -1,6 +1,6 @@
 ---
 title: Mutual funds
-description: BSEC's fund registry and ICB Asset Management's daily open-ended fund NAVs.
+description: BSEC's 141-fund registry and daily NAVs from 20 Bangladesh asset managers.
 section: Datasets
 order: 10
 ---
@@ -15,18 +15,57 @@ with consent date, subscription window, issue size and prospectus link. `fund_ty
 
 ## NAVs
 
-ICB Asset Management Company publishes a daily NAV table for its open-ended funds. The job
-reads the table and publishes both the NAV and the market price per fund.
+BSEC does not run a central NAV feed. Each asset manager publishes its own table, so the
+`amc_nav` job keeps one adapter per manager and normalises everything to the same shape:
 
-- `funds.icb.<fund>.nav` — NAV per unit in BDT
-- `funds.icb.<fund>.market_price` — market price per unit in BDT
+- `funds.<amc>.<fund>.nav` — transaction / fair NAV per unit, BDT
+- `funds.<amc>.<fund>.nav_cost` — accounting NAV at cost, where the manager prints both
+- `funds.<amc>.<fund>.market_price` — a separate investor buy/sell price, where it differs
 
-Examples: `funds.icb.icb_amcl_unit_fund.nav`, `funds.icb.bangladesh_fund.nav`.
+In every series, `.nav` is the value used to buy or sell units (the manager's market or
+fair NAV); `.nav_cost` is the accounting cost basis. This is the same convention across
+all 20 managers, including ICB.
 
-The date is the “as on” date printed by ICB AMC. This is the first AMC adapter; other
-managers can be added with the same table shape.
+Examples: `funds.idlc.idlc_growth_fund.nav`, `funds.ucb.ucb_income_plus_fund.nav`,
+`funds.lankabangla.lankabangla_fixed_income_fund.nav`.
+
+### Managers covered
+
+| Slug | Manager | Funds | History from |
+|---|---|---|---|
+| `icb` | ICB Asset Management | 15 | 2026 |
+| `capitec` | Capitec Asset Management | 4 | 2026 |
+| `capm` | CAPM (Capital & Asset Portfolio Management) | 3 | 2016 |
+| `candlestone` | CandleStone Investments Partner | 1 | 2026 |
+| `edge` | EDGE AMC | 4 | 2026 |
+| `ekush` | Ekush Wealth Management | 3 | 2026 |
+| `greendelta` | Green Delta Dragon Asset Management | 1 | 2023 |
+| `idlc` | IDLC Asset Management | 4 | 2026 |
+| `impress` | Impress Capital | 4 | 2016 |
+| `investit` | Investit Asset Management | 1 | 2026 |
+| `lankabangla` | LankaBangla Asset Management | 5 | 2016 |
+| `lrglobal` | LR Global Bangladesh Asset Management | 6 | 2010 |
+| `mbl` | MBL Asset Management | 1 | 2022 |
+| `nam` | National Asset Management | 1 | 2022 |
+| `prime` | Prime Finance Asset Management | 3 | 2026 |
+| `race` | Bangladesh RACE Asset Management | 12 | 2026 |
+| `sandhani` | Sandhani Asset Management | 2 | 2026 |
+| `shanta` | Shanta Asset Management | 3 | 2026 |
+| `ucb` | UCB Asset Management | 3 | 2021 |
+| `vipb` | VIPB Asset Management | 6 | 2026 |
+
+### API
+
+- `GET /v1/funds/amcs` — managers, fund counts, observation counts and coverage dates
+- `GET /v1/funds/nav` — latest NAV per fund; filters `amc`, `fund`, `as_of`
+- `GET /v1/funds/registry` — BSEC registry
+
+Dates are the publishers' own NAV dates. Where a manager publishes only the current day
+(EDGE, IDLC, VIPB, RACE, Prime, CandleStone), history accrues from each daily run.
 
 ## Sources
 
 - Registry: <https://www.sec.gov.bd/mutual-fund>
-- NAVs: <https://icbamcl.gov.bd/investor-service/nav/nav-open-ended-mutual-funds>
+- ICB AMC: <https://icbamcl.gov.bd/investor-service/nav/nav-open-ended-mutual-funds>
+- Per-manager URLs are in `backend/ingestion/jobs/amc_nav.py` and on each series'
+  `source_url`.

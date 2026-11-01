@@ -41,6 +41,9 @@ SCHEDULES: list[Schedule] = [
     # ICB AMC daily NAV (after the DSE close).
     Schedule("icb_nav", {"hour": 17, "minute": 30, "day_of_week": "sun,mon,tue,wed,thu"},
              expected_interval=timedelta(days=4), stale_on_run=True),
+    # Other AMCs' daily/weekly NAV tables (19 managers, mixed publication times).
+    Schedule("amc_nav", {"hour": 18, "minute": 15, "day_of_week": "sun,mon,tue,wed,thu"},
+             expected_interval=timedelta(days=7), stale_on_run=True),
     # BBS CPI release: check every morning; publish shortly after the monthly release.
     Schedule("bbs_cpi", {"hour": 7, "minute": 10}, expected_interval=timedelta(days=40), stale_on_run=True),
     # Annual/quarterly GDP: cheap monthly check.

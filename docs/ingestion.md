@@ -1,6 +1,6 @@
 # Ingestion — every job, where it runs, when
 
-Sixteen jobs are registered in `backend/ingestion/registry.py`. Each is an `IngestionJob`
+Seventeen jobs are registered in `backend/ingestion/registry.py`. Each is an `IngestionJob`
 subclass in `backend/ingestion/jobs/<name>.py`; its module docstring describes the source,
 quirks and series ids. Run one by hand with:
 
@@ -25,7 +25,8 @@ interval.
 | `nbr_revenue` | NBR monthly revenue-collection PDF: customs, VAT, income tax and components | `fiscal.nbr.*` | daily 08:25 |
 | `bpdb_power` | BPDB/NLDC daily system summary: generation, demand, fuel mix, imports, load-shed | `energy.power.*` | daily 10:10 |
 | `dam_prices` | DAM daily division-level retail-price PDFs | `dam_prices` table + `dam.prices.rows` | daily 09:50 |
-| `icb_nav` | ICB AMC daily open-ended fund NAV and market price | `funds.icb.*` | Sun–Thu 17:30 |
+| `icb_nav` | ICB AMC daily open-ended fund NAV and market price | `funds.icb.*` | Sun-Thu 17:30 |
+| `amc_nav` | NAV tables from 19 other asset managers (HTML, PDF and JSON) | `funds.<amc>.*` | Sun-Thu 18:15 |
 | `bsec_funds` | BSEC mutual-fund registry: open-end and closed-end issues | `fund_registry` + `funds.registry.funds` | daily 09:30 |
 | `bbs_gdp` | BBS GDP release page and annual GDP workbook | `gdp.*` | daily 07:40 |
 | `bbs_census` | BBS Population & Housing Census 2022: one workbook per district (64) | `regional.census.*` with `dims.district` and `dims.division` | Sunday 03:20 |
@@ -33,6 +34,11 @@ interval.
 | `epb_exports` | Export Promotion Bureau monthly export summary workbook | `trade.exports.*` | daily 08:10 |
 | `tcb_prices` | TCB daily Dhaka retail-price workbook (essential commodities) | `prices.tcb.*` | daily 08:40 |
 | `derive_indicators` | Derived layer from official inputs (real call-money rate, real M2 growth, remittance growth, BDT depreciation) | `derived.*` | daily 10:00 |
+
+`amc_nav` is one scheduled job with 19 small adapters. Each adapter owns one manager's
+URL and table shape; the job normalises to `funds.<amc>.<fund>.nav`, `.nav_cost` and
+`.market_price`. A manager that fails to fetch is skipped, and `funds.amc_nav.managers`
+records how many answered; if every adapter fails, the run fails.
 
 `bb_workbook` and `bb_web` overlap deliberately: the workbook gives long history and the
 HTML pages give the current month. `bb_web` runs twice a day because BB updates the FX and

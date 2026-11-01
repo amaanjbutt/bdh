@@ -27,9 +27,11 @@ Open work, roughly in priority order.
    need OCR.
 8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026).
    Older NBR PDFs use different templates and are rejected by the subtotal check.
-9. **Mutual funds.** `bsec_funds` covers the 141-fund registry; `icb_nav` covers ICB
-   AMC's 15 open-ended funds. Other AMCs need their own NAV adapters; BSEC has no central
-   daily NAV feed.
+9. **Mutual funds.** `bsec_funds` covers the 141-fund registry and `amc_nav` covers 82
+   funds at 20 managers. Still missing: AIMS of Bangladesh (NAV archive is a
+   CSRF-protected paginated POST form), CWT, Alliance Capital, UniCap, Bhawal, Meghna,
+   Abdul Monem, AIBL AMC, DBH AMC and NCCBL AMC — their sites either have no public NAV
+   table or publish only a prospectus. Add adapters as those managers publish.
 10. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix
     needs NBR/BB data. Scope the smallest useful table (top 50 products × 20 partners).
 11. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep
@@ -42,7 +44,7 @@ Open work, roughly in priority order.
 
 10. ~~**R2.**~~ Done 2026-10-31: R2 enabled, bucket `bangladeshdatahub-raw` created, S3
     token installed and `storage.py` uploads verified via `bb_web`.
-11. ~~**Refresh `live-counts.json`.**~~ Done 2026-10-31: 3,232 series / 88,274 observations.
+11. ~~**Refresh `live-counts.json`.**~~ Done 2026-11-01: 3,585 series / 115,901 observations.
 12. **Prune the legacy schema.** `agri_markets`, `agri_prices`, `funds`, `securities`,
     `trade_flows`, `ismo_merit_tokens` and related tables are unused. Drop them in a
     migration once no code references them.

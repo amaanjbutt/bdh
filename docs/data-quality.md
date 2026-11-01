@@ -64,6 +64,24 @@ against the publisher's own totals fails.
   parser keeps the product-level receipts in USD million and records the fiscal year in the
   series id; it does not mix monthly and cumulative values in one series.
 
+## Mutual-fund NAVs
+
+Each AMC prints NAV in its own shape, so `amc_nav` has one adapter per manager. The
+source-specific checks that matter:
+
+- **National Asset Management** has a typo in the weekly table (`October. 28, 2028`).
+  Rows dated in the future are dropped; the next day's row still covers that date.
+- **CAPM** swapped the total-NAV and per-unit columns on 2024-05-09 and 2021-11-04. If
+  the "per unit" column is more than 10x the total column, the adapter swaps them back
+  before publishing.
+- **LR Global**'s landing page says "February 22, 2025" but its per-fund NAV PDFs run to
+  2026-02-26. The job reads the PDF dates, not the page label.
+- **EDGE, IDLC, VIPB, RACE, Prime** and **CandleStone** publish only the current day.
+  History accrues from each run; it cannot be backfilled from those pages.
+- **Capitec** and **RACE** publish both a closed-end table and an open-end table on the
+  same page. The adapter routes by the table header, so column-shifted rows are not
+  mistaken for a different fund.
+
 ## Vintages and revisions
 
 The `observation_revisions` trigger records the prior value whenever an observation changes,

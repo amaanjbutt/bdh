@@ -65,7 +65,7 @@ _RELAY_HOSTS = [h.strip() for h in os.getenv("FETCH_RELAY_HOSTS", "pta.gov.pk").
 _INSECURE_HOSTS = [h.strip() for h in os.getenv(
     "INGEST_INSECURE_HOSTS",
     "bbs.gov.bd,old.dsebd.org,icbamcl.gov.bd,epb.gov.bd,tcb.gov.bd,"
-    "dam.gov.bd,btrc.gov.bd,berc.org.bd,mra.gov.bd,mof.gov.bd,bpdb.gov.bd"
+    "dam.gov.bd,btrc.gov.bd,berc.org.bd,mra.gov.bd,mof.gov.bd,bpdb.gov.bd,csrbgf.com"
 ).split(",") if h.strip()]
 
 
@@ -156,14 +156,16 @@ def get(url: str, timeout: int = 30, headers: dict | None = None):
     return resp
 
 
-def post(url: str, json=None, timeout: int = 60):
-    """POST JSON returning a response with `.text` / `.json()` / `.status_code`."""
+def post(url: str, json=None, data=None, timeout: int = 60):
+    """POST JSON or form data returning a response with `.text` / `.json()`."""
     for attempt in range(4):
         if _HAVE_CFFI:
-            resp = _sess().post(url, json=json, proxies=_proxies_for(url), timeout=timeout)
+            resp = _sess().post(url, json=json, data=data, proxies=_proxies_for(url),
+                                timeout=timeout)
         else:
             resp = httpx.post(
-                url, json=json, headers={"User-Agent": settings.user_agent}, timeout=timeout
+                url, json=json, data=data,
+                headers={"User-Agent": settings.user_agent}, timeout=timeout
             )
             resp.raise_for_status()
             return resp

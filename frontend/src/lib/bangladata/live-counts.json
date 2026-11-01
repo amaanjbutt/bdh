@@ -1,7 +1,7 @@
 {
-  "series": 3480,
-  "funds": 15,
-  "amcs": 1,
+  "series": 3585,
+  "funds": 82,
+  "amcs": 20,
   "securities": 632,
   "modules": {
     "agri": 25,
@@ -10,7 +10,7 @@
     "external": 373,
     "fiscal": 48,
     "forex": 149,
-    "funds": 31,
+    "funds": 136,
     "industry": 13,
     "inflation": 36,
     "market": 27,
@@ -22,6 +22,6 @@
     "social": 231,
     "telecom": 26
   },
-  "observations": 98039,
+  "observations": 115901,
   "generated_at": "2026-11-01"
 }

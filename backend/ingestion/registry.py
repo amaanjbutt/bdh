@@ -6,6 +6,7 @@ scheduler import the same JOBS map without a circular dependency.
 from __future__ import annotations
 
 from ingestion.framework import IngestionJob
+from ingestion.jobs.amc_nav import AmcNavJob
 from ingestion.jobs.bb_payments import BbPaymentsJob
 from ingestion.jobs.bb_web import BbWebJob
 from ingestion.jobs.bb_workbook import BbWorkbookJob
@@ -33,6 +34,7 @@ JOBS: dict[str, type[IngestionJob]] = {
     BpdbPowerJob.name: BpdbPowerJob,
     BtrcTelecomJob.name: BtrcTelecomJob,
     BsecFundsJob.name: BsecFundsJob,
+    AmcNavJob.name: AmcNavJob,
     DamPricesJob.name: DamPricesJob,
     DseMarketJob.name: DseMarketJob,
     EpbExportsJob.name: EpbExportsJob,

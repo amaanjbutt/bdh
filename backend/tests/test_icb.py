@@ -15,6 +15,6 @@ def test_icb_nav_table():
     icb_nav.ensure_series = lambda rows: None
     rows = icb_nav.IcbNavJob().parse(FetchedFile("icb.html", html.encode(), date.today()))
     got = {r.series_id: r for r in rows}
-    assert got["funds.icb.icb_amcl_unit_fund.nav"].value == 324.22
-    assert got["funds.icb.icb_amcl_unit_fund.market_price"].value == 210.55
+    assert got["funds.icb.icb_amcl_unit_fund.nav"].value == 210.55
+    assert got["funds.icb.icb_amcl_unit_fund.nav_cost"].value == 324.22
     assert got["funds.icb.icb_amcl_unit_fund.nav"].obs_date == date(2026, 10, 29)
