@@ -27,8 +27,9 @@ Open work, roughly in priority order.
    need OCR.
 8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026).
    Older NBR PDFs use different templates and are rejected by the subtotal check.
-9. **Mutual funds.** `icb_nav` covers ICB AMC's 15 open-ended funds. Other AMCs need their
-   own NAV adapters; BSEC has no central daily NAV feed.
+9. **Mutual funds.** `bsec_funds` covers the 141-fund registry; `icb_nav` covers ICB
+   AMC's 15 open-ended funds. Other AMCs need their own NAV adapters; BSEC has no central
+   daily NAV feed.
 10. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix
     needs NBR/BB data. Scope the smallest useful table (top 50 products × 20 partners).
 11. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep

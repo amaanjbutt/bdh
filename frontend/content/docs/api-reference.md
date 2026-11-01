@@ -40,6 +40,7 @@ Anonymous access is limited to public catalog and status endpoints.
 | GET | `/v1/market/overview` | DSE indices and the latest session (public) |
 | GET | `/v1/market/securities` | Listed instruments, with `q`, `sector`, `limit` (public) |
 | GET | `/v1/agri/dam` | DAM division-level daily retail prices, with `price_date`, `division`, `commodity` (public) |
+| GET | `/v1/funds/registry` | BSEC mutual-fund registry, with `fund_type` and `q` (public) |
 | GET | `/v1/status` | Freshness, counts, module states |
 | GET | `/v1/calendar` | Upcoming releases |
 | GET | `/v1/plans` | Public plan matrix |

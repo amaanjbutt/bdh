@@ -64,6 +64,21 @@ against the publisher's own totals fails.
   parser keeps the product-level receipts in USD million and records the fiscal year in the
   series id; it does not mix monthly and cumulative values in one series.
 
+## Vintages and revisions
+
+The `observation_revisions` trigger records the prior value whenever an observation changes,
+and `observations.first_seen_at` says when we first held the point. The API exposes
+`?vintage=YYYY-MM-DD` and `/v1/series/{id}/revisions` (Pro/Business).
+
+TCB is the first source that prints several prior dates in every workbook (today, a week
+ago, a month ago, a year ago). The `tcb_prices` job re-emits those columns as observations,
+so a later workbook that restates an old date becomes a real revision. The same pattern can
+be applied to any publisher that republishes history.
+
+A full multi-issue backfill (BB Monthly Economic Trends archive) is still open; it needs an
+adapter that maps each issue's printed values to the current series ids, as PakDataHub does
+for the SBP Monthly Statistical Bulletin.
+
 ## Annotations
 
 Publisher-confirmed odd values stay in the database and are explained in

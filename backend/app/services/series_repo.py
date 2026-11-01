@@ -322,7 +322,7 @@ _MODULE_FEEDERS = {
     "industry": ["bb_workbook"],
     "telecom": ["btrc_telecom"],
     "energy": ["bpdb_power"],
-    "funds": ["icb_nav"],
+    "funds": ["icb_nav", "bsec_funds"],
     "social": ["bb_workbook"],
     "commodities": ["bb_workbook", "tcb_prices"],
     "agri": ["bb_workbook"],
@@ -708,7 +708,8 @@ def catalog_totals() -> dict:
                (SELECT count(DISTINCT dims->>'fund') FROM observations
                  WHERE series_id LIKE 'funds.%' AND dims ? 'fund')::int AS funds,
                1::int AS amcs,
-               (SELECT count(*) FROM dse_securities)::int AS securities
+               (SELECT count(*) FROM dse_securities)::int AS securities,
+               (SELECT count(*) FROM observation_revisions)::int AS revisions
         """
     )
     return dict(row or {})

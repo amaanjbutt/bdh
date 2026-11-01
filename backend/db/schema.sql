@@ -509,6 +509,21 @@ CREATE TABLE IF NOT EXISTS dam_prices (
 CREATE INDEX IF NOT EXISTS idx_dam_prices_date ON dam_prices(price_date DESC);
 CREATE INDEX IF NOT EXISTS idx_dam_prices_division ON dam_prices(division, commodity, price_date DESC);
 
+-- BSEC mutual-fund registry (open-end and closed-end issues).
+CREATE TABLE IF NOT EXISTS fund_registry (
+    name               TEXT PRIMARY KEY,
+    fund_type          TEXT NOT NULL,          -- 'open_end' | 'closed_end'
+    consent_date       DATE,
+    subscription_open  DATE,
+    subscription_close DATE,
+    nrb_close          DATE,
+    amount_crore       NUMERIC,
+    document_url       TEXT,
+    source             TEXT NOT NULL DEFAULT 'BSEC',
+    updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_fund_registry_type ON fund_registry(fund_type);
+
 -- Data-quality audit (2026-10-14, scripts/dq_audit.py): suspect values found by detectors,
 -- whole-series reconciliations against the publisher, and the points that disagreed.
 CREATE TABLE IF NOT EXISTS dq_findings (

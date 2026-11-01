@@ -1,6 +1,6 @@
 # Ingestion — every job, where it runs, when
 
-Fifteen jobs are registered in `backend/ingestion/registry.py`. Each is an `IngestionJob`
+Sixteen jobs are registered in `backend/ingestion/registry.py`. Each is an `IngestionJob`
 subclass in `backend/ingestion/jobs/<name>.py`; its module docstring describes the source,
 quirks and series ids. Run one by hand with:
 
@@ -26,6 +26,7 @@ interval.
 | `bpdb_power` | BPDB/NLDC daily system summary: generation, demand, fuel mix, imports, load-shed | `energy.power.*` | daily 10:10 |
 | `dam_prices` | DAM daily division-level retail-price PDFs | `dam_prices` table + `dam.prices.rows` | daily 09:50 |
 | `icb_nav` | ICB AMC daily open-ended fund NAV and market price | `funds.icb.*` | Sun–Thu 17:30 |
+| `bsec_funds` | BSEC mutual-fund registry: open-end and closed-end issues | `fund_registry` + `funds.registry.funds` | daily 09:30 |
 | `bbs_gdp` | BBS GDP release page and annual GDP workbook | `gdp.*` | daily 07:40 |
 | `bbs_census` | BBS Population & Housing Census 2022: one workbook per district (64) | `regional.census.*` with `dims.district` and `dims.division` | Sunday 03:20 |
 | `dse_market` | Dhaka Stock Exchange live snapshot, daily archive and instrument list | `market.dse.*`, `dse_indices`, `dse_prices`, `dse_securities` | Sun–Thu 16:30 |

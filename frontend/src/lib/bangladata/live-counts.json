@@ -1,5 +1,5 @@
 {
-  "series": 3479,
+  "series": 3480,
   "funds": 15,
   "amcs": 1,
   "securities": 632,
@@ -10,7 +10,7 @@
     "external": 373,
     "fiscal": 48,
     "forex": 149,
-    "funds": 30,
+    "funds": 31,
     "industry": 13,
     "inflation": 36,
     "market": 27,
@@ -22,6 +22,6 @@
     "social": 231,
     "telecom": 26
   },
-  "observations": 98038,
+  "observations": 98039,
   "generated_at": "2026-11-01"
 }

@@ -14,6 +14,7 @@ order: 1
 | NBR | Tax receipts | monthly | PDF revenue-collection statement |
 | EPB | Export receipts by product | monthly | XLSX summary workbook |
 | BPDB / NLDC | Daily generation, demand, fuel mix, imports, load-shedding | daily | PDF System Summary Report |
+| BSEC | Mutual-fund registry, issue sizes and prospectuses | on issue | public HTML tables |
 | ICB AMC | Open-ended mutual-fund NAV and market price | daily | HTML NAV table |
 | DSE | Indices, turnover, listed instrument OHLCV | daily | public JSON API |
 | BTRC | Mobile/internet subscribers, teledensity, 3G/4G, tower counts | monthly | public HTML tables (Bengali labels) |

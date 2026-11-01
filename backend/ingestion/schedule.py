@@ -36,6 +36,8 @@ SCHEDULES: list[Schedule] = [
     Schedule("bpdb_power", {"hour": 10, "minute": 10}, expected_interval=timedelta(days=3), stale_on_run=True),
     # DAM daily division-level retail prices (PDF tables).
     Schedule("dam_prices", {"hour": 9, "minute": 50}, expected_interval=timedelta(days=7), stale_on_run=True),
+    # BSEC mutual-fund registry (new issues; cheap daily check).
+    Schedule("bsec_funds", {"hour": 9, "minute": 30}, expected_interval=timedelta(days=40), stale_on_run=True),
     # ICB AMC daily NAV (after the DSE close).
     Schedule("icb_nav", {"hour": 17, "minute": 30, "day_of_week": "sun,mon,tue,wed,thu"},
              expected_interval=timedelta(days=4), stale_on_run=True),
