@@ -16,7 +16,7 @@ order: 1
 | BPDB / NLDC | Daily generation, demand, fuel mix, imports, load-shedding | daily | PDF System Summary Report |
 | BSEC | Mutual-fund registry, issue sizes and prospectuses | on issue | public HTML tables |
 | ICB AMC | Open-ended mutual-fund NAV and market price | daily | HTML NAV table |
-| 19 other AMCs | Mutual-fund NAV / cost / market price | daily or weekly | HTML tables, PDFs, public JSON |
+| 20 other AMCs | Mutual-fund NAV / cost / market price | daily or weekly | HTML tables, PDFs, public JSON |
 | DSE | Indices, turnover, listed instrument OHLCV | daily | public JSON API |
 | BTRC | Mobile/internet subscribers, teledensity, 3G/4G, tower counts | monthly | public HTML tables (Bengali labels) |
 | TCB | Dhaka daily essential-commodity retail prices | daily | XLSX per trading day |

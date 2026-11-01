@@ -99,10 +99,10 @@ export const MODULES: ModuleDef[] = [
   {
     slug: "funds",
     name: "Mutual Funds",
-    line: "Daily NAVs from 20 asset managers, 82 funds and BSEC's full 141-fund registry",
+    line: "Daily NAVs from 21 asset managers, 86 funds and BSEC's full 141-fund registry",
     cadence: "Daily",
     depth: "2010 →",
-    source: "20 AMCs · BSEC",
+    source: "21 AMCs · BSEC",
   },
   {
     slug: "market",
@@ -218,7 +218,7 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
   payments: 1298,
   telecom: 26,
   energy: 102,
-  funds: 136,
+  funds: 147,
   market: 27,
   commodities: 148,
   agri: 25,
@@ -227,8 +227,8 @@ export const MODULE_SERIES_COUNTS: Record<string, number> = {
 };
 
 export const TOTAL_SERIES = Object.values(MODULE_SERIES_COUNTS).reduce((a, b) => a + b, 0);
-export const TOTAL_OBSERVATIONS = 115_901;
-export const TOTAL_FUNDS = 82;
+export const TOTAL_OBSERVATIONS = 118_991;
+export const TOTAL_FUNDS = 86;
 
 export const PLANS: Plan[] = [
   { id: "free", for_who: "Evaluating, students, journalists", usage_rights: "internal", name: "Free", price_monthly: 0, requests_day: 500, requests_min: 10, free_credits: 500, history: "1 year", core_modules: true, funds_alternate: true, csv: true, transforms: true, webhooks: "—", bulk: false, vintages: false, sla: false, support: "Community", cta: "Get a key" },

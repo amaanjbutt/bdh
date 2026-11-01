@@ -27,9 +27,9 @@ Open work, roughly in priority order.
    need OCR.
 8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026).
    Older NBR PDFs use different templates and are rejected by the subtotal check.
-9. **Mutual funds.** `bsec_funds` covers the 141-fund registry and `amc_nav` covers 82
-   funds at 20 managers. Still missing: AIMS of Bangladesh (NAV archive is a
-   CSRF-protected paginated POST form), CWT, Alliance Capital, UniCap, Bhawal, Meghna,
+9. **Mutual funds.** `bsec_funds` covers the 141-fund registry and `amc_nav` covers 86
+   funds at 21 managers. Still missing: AIMS of Bangladesh (NAV archive is a
+   CSRF-protected paginated POST form), Alliance Capital, UniCap, Bhawal, Meghna,
    Abdul Monem, AIBL AMC, DBH AMC and NCCBL AMC — their sites either have no public NAV
    table or publish only a prospectus. Add adapters as those managers publish.
 10. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix

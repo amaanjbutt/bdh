@@ -20,6 +20,6 @@ order: 2
 - NBR monthly revenue: customs, VAT, income tax and components
 - BPDB/NLDC daily power generation, demand, fuel mix and load-shedding
 - BSEC mutual-fund registry (141 funds) and ICB AMC daily NAV/market price
-- NAV adapters for 19 more asset managers: 82 funds, 20 managers, 2010 →
+- NAV adapters for 20 more asset managers: 86 funds, 21 managers, 2010 →
 - Bangladesh Bank digital payments and agent banking
 - Derived layer: real call-money rate, real M2 growth, remittance growth, BDT depreciation

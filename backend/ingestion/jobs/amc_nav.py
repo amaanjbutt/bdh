@@ -871,6 +871,51 @@ class CandleStoneAdapter(Adapter):
         return rows
 
 
+class CwtAdapter(Adapter):
+    slug = "cwt"
+    manager = "CWT Asset Management"
+    url = "https://www.cwtamc.com/"
+    pages = {
+        "ebfgf": ("https://www.cwtamc.com/cwt-emerging-bangladesh-first-growth-fund-cwtebfgf/",
+                  "CWT Emerging Bangladesh First Growth Fund"),
+        "sadharan": ("https://www.cwtamc.com/cwt-sadharan-bima-growth-fund-cwtsbgf/",
+                     "CWT Sadharan Bima Growth Fund"),
+        "opp": ("https://www.cwtamc.com/opportunities-fund/", "CWT Opportunities Fund"),
+        "shariah": ("https://www.cwtamc.com/cwt-community-bank-shariah-fund/",
+                    "CWT Community Bank Shariah Fund"),
+    }
+
+    def fetch(self) -> list[FetchedFile]:
+        return [self.file(f"{key}.html", http_client.get(url, timeout=60).content)
+                for key, (url, _) in self.pages.items()]
+
+    def parse(self, f: FetchedFile) -> list[NavRow]:
+        key = f.filename.split("__", 1)[1].split(".")[0]
+        fund = self.pages.get(key, (None, None))[1]
+        if not fund:
+            return []
+        rows = []
+        for table in _tables(f.content):
+            for cells in table:
+                if len(cells) < 5 or "publishing date" not in cells[0].lower():
+                    continue
+                for row in table[1:]:
+                    if len(row) < 5:
+                        continue
+                    when, nav = parse_date(row[0]), _num(row[2])
+                    if when is None or nav is None:
+                        continue
+                    cost = _num(row[3])
+                    buy = _num(row[4])
+                    rows.append(NavRow(
+                        fund, when, nav,
+                        nav_cost=cost if _differs(cost, nav) else None,
+                        market_price=buy if _differs(buy, nav) else None,
+                    ))
+                break
+        return rows
+
+
 # ---------------------------------------------------------------------------
 # Job
 # ---------------------------------------------------------------------------
@@ -884,7 +929,7 @@ class AmcNavJob(IngestionJob):
         IdlcAdapter(), ImpressAdapter(), CapitecAdapter(), MblAdapter(),
         LankaBanglaAdapter(), RaceAdapter(), CapmAdapter(), VipbAdapter(),
         EkushAdapter(), ShantaAdapter(), InvestitAdapter(), UcbAdapter(),
-        GreenDeltaAdapter(), PrimeAdapter(), CandleStoneAdapter(),
+        GreenDeltaAdapter(), PrimeAdapter(), CandleStoneAdapter(), CwtAdapter(),
     ]
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:

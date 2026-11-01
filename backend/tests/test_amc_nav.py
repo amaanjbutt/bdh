@@ -164,3 +164,21 @@ def test_candlestone_table():
     rows = m.CandleStoneAdapter().parse(_file("candlestone__nav.html", html))
     assert rows[0].nav == 6.52
     assert rows[0].nav_cost == 9.72
+
+
+def test_cwt_table():
+    html = """
+    <table>
+      <tr><th>Publishing Date</th><th>Validity Date</th><th>NAV (At Market Price)</th>
+          <th>NAV (At Cost Price)</th><th>Sale Price</th><th>Repurchase Price</th>
+          <th>DSEX INDEX</th></tr>
+      <tr><td>29/10/2026</td><td>01/11/2026</td><td>15.73</td><td>13.94</td>
+          <td>15.73</td><td>15.73</td><td>5417.44</td></tr>
+    </table>
+    """
+    rows = m.CwtAdapter().parse(_file("cwt__ebfgf.html", html))
+    assert rows[0].fund == "CWT Emerging Bangladesh First Growth Fund"
+    assert rows[0].when == date(2026, 10, 29)
+    assert rows[0].nav == 15.73
+    assert rows[0].nav_cost == 13.94
+    assert rows[0].market_price is None

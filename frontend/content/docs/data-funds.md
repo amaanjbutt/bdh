@@ -1,6 +1,6 @@
 ---
 title: Mutual funds
-description: BSEC's 141-fund registry and daily NAVs from 20 Bangladesh asset managers.
+description: BSEC's 141-fund registry and daily NAVs from 21 Bangladesh asset managers.
 section: Datasets
 order: 10
 ---
@@ -24,7 +24,7 @@ BSEC does not run a central NAV feed. Each asset manager publishes its own table
 
 In every series, `.nav` is the value used to buy or sell units (the manager's market or
 fair NAV); `.nav_cost` is the accounting cost basis. This is the same convention across
-all 20 managers, including ICB.
+all 21 managers, including ICB.
 
 Examples: `funds.idlc.idlc_growth_fund.nav`, `funds.ucb.ucb_income_plus_fund.nav`,
 `funds.lankabangla.lankabangla_fixed_income_fund.nav`.
@@ -37,6 +37,7 @@ Examples: `funds.idlc.idlc_growth_fund.nav`, `funds.ucb.ucb_income_plus_fund.nav
 | `capitec` | Capitec Asset Management | 4 | 2026 |
 | `capm` | CAPM (Capital & Asset Portfolio Management) | 3 | 2016 |
 | `candlestone` | CandleStone Investments Partner | 1 | 2026 |
+| `cwt` | CWT Asset Management | 4 | 2019 |
 | `edge` | EDGE AMC | 4 | 2026 |
 | `ekush` | Ekush Wealth Management | 3 | 2026 |
 | `greendelta` | Green Delta Dragon Asset Management | 1 | 2023 |

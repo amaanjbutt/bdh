@@ -35,7 +35,7 @@ database with JSON/CSV delivery, revision history and a free tier.
 | `payments` | MFS accounts and transactions, cards, internet/mobile banking, QR, agent banking | Bangladesh Bank | 2020 → |
 | `telecom` | Mobile and internet subscribers, teledensity, mobile broadband, 3G/4G and operator tower counts | BTRC | 2021 → |
 | `energy` | Daily generation, demand, fuel mix by zone, cross-border imports and load-shedding | BPDB · NLDC | 2026 → |
-| `funds` | BSEC's 141-fund registry plus daily NAVs from 20 managers (82 funds, 2010 →) | BSEC · 20 AMCs | 2010 → |
+| `funds` | BSEC's 141-fund registry plus daily NAVs from 21 managers (86 funds, 2010 →) | BSEC · 21 AMCs | 2010 → |
 | `market` | DSEX, DS30, DSES, turnover, volume, trades, market cap, 600+ instrument prices | DSE | 2025 → |
 | `commodities` | Gold, Brent, Dubai crude and Bangladesh Bank's retail price table; TCB daily Dhaka essential-goods prices | Bangladesh Bank · TCB | 2002 → |
 | `agri` | Rice, wheat, jute, pulses, oilseeds, tea, sugarcane, cotton and tobacco area/production | Bangladesh Bank | 1990s → |
