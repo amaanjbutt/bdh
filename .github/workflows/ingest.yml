@@ -38,7 +38,7 @@ jobs:
     timeout-minutes: 120
     services:
       postgres:
-        image: postgres:16
+        image: postgres:18
         env:
           POSTGRES_USER: bangladata
           POSTGRES_PASSWORD: bangladata
@@ -117,7 +117,7 @@ jobs:
           exit $status
 
       - name: Persist the Postgres snapshot
-        if: always() && steps.restore.outputs.persistent != 'true'
+        if: always() && steps.restore.outcome == 'success' && steps.restore.outputs.persistent != 'true'
         run: |
           pg_dump -Fc -d "$DATABASE_URL" -f /tmp/bd.dump
           python -m scripts.r2_snapshot upload /tmp/bd.dump
