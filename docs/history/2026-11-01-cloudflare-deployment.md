@@ -284,7 +284,7 @@ restored R2 snapshot.
 - R2 snapshot: 1,298,653 bytes after the full run
 - R2 series mirror: 3,596 files / 23.5 MB
 - Cron: `*/30 * * * *` (watchdog dormant until `GITHUB_TOKEN` is set)
-- CI: green through `7351681`; docs commit follows
+- CI: green through `7055d91`
 
 ### Not done / blocked
 
@@ -313,6 +313,8 @@ restored R2 snapshot.
 | `ce82ee7` | D1 batching fix + remove edge-only Google button |
 | `6dc1d15` | Document Cloudflare limits and remaining work |
 | `7351681` | Per-series R2 flat-file mirror |
+| `b41608b` | Cloudflare docs, runbook, agent map, folder cleanup |
+| `7055d91` | CI/ingestion workflow map |
 
 ## Lessons that should not be relearned
 
