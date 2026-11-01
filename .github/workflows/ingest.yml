@@ -122,6 +122,10 @@ jobs:
           pg_dump -Fc -d "$DATABASE_URL" -f /tmp/bd.dump
           python -m scripts.r2_snapshot upload /tmp/bd.dump
 
+      - name: Mirror every series to R2 (flat-file export)
+        if: always() && steps.restore.outcome == 'success'
+        run: python -m scripts.export_r2_series
+
       - name: Sync changed rows into D1
         if: always()
         run: |

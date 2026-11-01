@@ -139,6 +139,34 @@ billing/webhook mutations return a clear 501.
   the live URLs are `*.amaanjbutt.workers.dev` until the zone and routes are
   added.
 
+## D1 vs R2 flat files
+
+Both are used, for different jobs:
+
+| Need | Store |
+|---|---|
+| Catalog, search, status, revisions, cross-series SQL | **D1** |
+| Per-series history/export/backup | **R2** `series/<id>.json` |
+
+D1 is the serving database because the API is not just "fetch one series": it
+needs `WHERE name LIKE`, module/source facets, freshness totals, revision chains
+and ad-hoc filters. A pure flat-file API would have to load and scan 3,596
+objects for a query like "value > 50 across every series".
+
+The R2 mirror is written by `backend/scripts/export_r2_series.py`:
+
+- `series/<id>.json` — metadata + observations + revisions for one series
+- `series/_index.json` — catalog metadata and per-series counts
+
+Current size: **3,596 files / ~23.5 MB**. A daily rewrite is ~3,596 Class A
+operations, about 108k/month, under R2's 1M/month free Class A allowance. Reads
+are Class B (10M/month free) and can be edge-cached in a Worker later.
+
+The actual D1 free-tier limits are **5 million rows read/day**, **100,000 rows
+written/day** and **5 GB storage** — not 1 million writes/day. The 118,991-row
+initial seed exceeded the daily write budget, which is why the sync is
+resumable. The per-series files are unaffected by that cap.
+
 ## Cron Trigger
 
 The API Worker runs every 30 minutes. It checks the latest observation date; if

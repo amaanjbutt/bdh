@@ -38,6 +38,8 @@
   rows to D1. No VPS is required.
 - **Raw archive** is written to local storage and mirrored to Cloudflare R2.
   `source_documents` records the SHA-256, source URL, content type and object key.
+  R2 also holds `series/<id>.json` flat-file exports (metadata + observations +
+  revisions) for backup/portability; D1 remains the SQL serving layer.
 - **Ingestion** is a Python framework: fetch → archive → parse → validate → upsert → run
   row → alert → webhooks (incremental only).
 - The **FastAPI app + Postgres** remain the local/dev implementation and the canonical
