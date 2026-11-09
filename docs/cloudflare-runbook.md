@@ -220,6 +220,12 @@ entries, and each file lives at `<job>/<filename>` inside the ZIP. Keep the norm
 ingestion filenames and publisher dates. The runner verifies the bundle hash and
 archives each source file before parsing.
 
+When the operator's Cloudflare login cannot access the ingestion bucket, first
+dispatch with `staged_release` and an ephemeral Base64 DER RSA `staging_public_key`.
+That run only prepares a 15-minute PUT URL for the bundle. Its logs carry the URL
+encrypted with AES-256-GCM, with the session key wrapped using RSA-OAEP SHA-256.
+Decrypt locally and upload the ZIP, then dispatch the replay without the public key.
+
 ## Custom domain
 
 `bangladatahub.com` is **not in the current Cloudflare account**. To attach it:
