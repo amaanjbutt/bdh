@@ -1,14 +1,12 @@
-"""EPB monthly/quarterly export summary workbook.
-
-One small XLSX per release lists every product line with the previous fiscal
-year, fiscal-year-to-date, and latest month. We publish each product as a
-`trade.exports.*` series in USD million.
-"""
+"""EPB goods exports by product, destination, and HS chapter × destination."""
 from __future__ import annotations
 
 import io
 import re
+from calendar import monthrange
 from datetime import date, datetime
+from hashlib import sha256
+from urllib.parse import urljoin, urlsplit
 
 import openpyxl
 from bs4 import BeautifulSoup
@@ -18,7 +16,61 @@ from ingestion.bb_tables import _num, clean_label, slugify
 from ingestion.catalog import ensure_series
 from ingestion.framework import FetchedFile, IngestionJob, Record
 
-LANDING = "https://epb.gov.bd/views/epb-export-data"
+LANDING = "https://epb.gov.bd/pages/epb-export-datas/"
+_BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
+_BN_MONTHS = {
+    "জানুয়ারি": 1, "জানুয়ারি": 1, "ফেব্রুয়ারি": 2, "ফেব্রুয়ারি": 2,
+    "মার্চ": 3, "এপ্রিল": 4, "মে": 5, "জুন": 6, "জুলাই": 7,
+    "আগস্ট": 8, "অগস্ট": 8, "সেপ্টেম্বর": 9, "অক্টোবর": 10,
+    "নভেম্বর": 11, "ডিসেম্বর": 12,
+}
+_COUNTRY = re.compile(r"^([A-Z]{2}):\s*\S")
+_CHAPTER = re.compile(r"^(\d{2}):\s*(.+)$")
+
+
+def _month_end(year: int, month: int) -> date:
+    return date(year, month, monthrange(year, month)[1])
+
+
+def _release_period(fiscal_start: int, month: int) -> date:
+    return _month_end(fiscal_start + (month < 7), month)
+
+
+def _workbook_period(sheet) -> tuple[int, date]:
+    header = clean_label(sheet["A3"].value)
+    match = re.fullmatch(r"Period:\s*July\s*(?:[-–]\s*([A-Za-z]+)\.?\s*)?(\d{4})\s*[-–]\s*(\d{2,4})",
+                         header, re.IGNORECASE)
+    if match is None:
+        raise ValueError(f"EPB release period not recognised: {header!r}")
+    start, end = int(match[2]), int(match[3])
+    if end not in {start + 1, (start + 1) % 100}:
+        raise ValueError(f"Invalid EPB fiscal year: {header!r}")
+    month = datetime.strptime((match[1] or "July")[:3].title(), "%b").month
+    return start, _release_period(start, month)
+
+
+def _releases(html: str) -> dict[date, dict[str, str]]:
+    releases: dict[date, dict[str, str]] = {}
+    for row in BeautifulSoup(html, "lxml").select("tr"):
+        year = row.select_one('[data-column="export_data_year"]')
+        period = row.select_one('[data-column="epb_export_data_month"]')
+        if not year or not period:
+            continue
+        fiscal = re.match(r"\d{4}", year.get_text(strip=True).translate(_BN_DIGITS))
+        month = _BN_MONTHS.get(re.split(r"[-–]", period.get_text(strip=True))[-1].strip())
+        if not fiscal or month is None:
+            continue
+        when = _release_period(int(fiscal[0]), month)
+        for link in row.select("a[href][title]"):
+            url = urljoin(LANDING, link["href"])
+            if not urlsplit(url).path.lower().endswith(".xlsx"):
+                continue
+            title = link["title"].lower()
+            if "summary sheet" in title:
+                releases.setdefault(when, {})["summary"] = url
+            elif re.search(r"country[- ]wise export\s*\(goods\)", title):
+                releases.setdefault(when, {})["destinations"] = url
+    return releases
 
 
 class EpbExportsJob(IngestionJob):
@@ -26,89 +78,126 @@ class EpbExportsJob(IngestionJob):
     source = "EPB"
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:
-        html = http_client.get(LANDING, timeout=60).text
-        soup = BeautifulSoup(html, "lxml")
-        links = [a["href"] for a in soup.find_all("a", href=True)
-                 if a["href"].lower().endswith(".xlsx") and "office-epb" in a["href"]]
-        for url in list(dict.fromkeys(links))[:12]:
-            try:
-                content = http_client.get(url, timeout=90).content
-                wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True, data_only=True)
-                ws = wb.worksheets[0]
-                title = " ".join(str(ws.cell(r, 1).value or "") for r in (1, 2, 3)).lower()
-                wb.close()
-                if "summary" in title and "export" in title:
-                    return [FetchedFile("epb_exports.xlsx", content, date.today())]
-            except Exception:
-                continue
-        return []
+        html = http_client.get(LANDING, timeout=60, retry_transient=True).text
+        releases = _releases(html)
+        periods = sorted(when for when in releases if when <= date.today())
+        if not periods:
+            raise ValueError("No dated EPB export releases found")
+        files = []
+        for when in periods[-(10 if backfill else 1):]:
+            attachments = releases[when]
+            for kind in ("summary", "destinations"):
+                url = attachments.get(kind)
+                if not url:
+                    self.fetch_warnings.append(f"{when}: EPB {kind} workbook missing")
+                    continue
+                try:
+                    content = http_client.get(url, timeout=90, retry_transient=True).content
+                except Exception:
+                    self.fetch_warnings.append(f"{when}: EPB {kind} workbook download failed")
+                    continue
+                digest = sha256(content).hexdigest()[:12]
+                files.append(FetchedFile(f"epb_{kind}_{when}_{digest}.xlsx", content, when))
+        if not files:
+            raise ValueError("No EPB export workbooks could be downloaded")
+        return files
 
     def parse(self, f: FetchedFile) -> list[Record]:
-        wb = openpyxl.load_workbook(io.BytesIO(f.content), data_only=True)
-        ws = wb.worksheets[0]
-        out: list[Record] = []
-        dynamic: dict[str, dict] = {}
-
-        # Header: "Period: July-September 2026-2027" and "Value in Million US$".
-        period = " ".join(str(ws.cell(r, 1).value or "") for r in range(1, 6))
-        m = re.search(r"([A-Za-z]+)\s*-\s*([A-Za-z]+)\s+(\d{4})-(\d{2,4})", period)
-        if not m:
+        wb = openpyxl.load_workbook(io.BytesIO(f.content), read_only=True, data_only=True)
+        try:
+            if f.filename.startswith("epb_destinations_"):
+                return self._parse_destinations(wb, f.when)
+            return self._parse_summary(wb.worksheets[0], f.when if f.filename.startswith("epb_summary_") else None)
+        finally:
             wb.close()
-            raise ValueError(f"EPB summary period not found in: {period[:160]!r}")
-        end_month = datetime.strptime(m.group(2)[:3].title(), "%b").month
-        fy_start = int(m.group(3))
-        fy_end = int(m.group(4))
-        if fy_end < 100:
-            fy_end += 2000
 
-        def month_end(year: int, month: int) -> date:
-            nxt = date(year + (month == 12), month % 12 + 1, 1)
-            return date.fromordinal(nxt.toordinal() - 1)
+    @staticmethod
+    def _parse_summary(sheet, expected: date | None) -> list[Record]:
+        start, when = _workbook_period(sheet)
+        if expected is not None and expected != when:
+            raise ValueError(f"EPB summary covers {when}, expected {expected}")
+        if "summary sheet" not in clean_label(sheet["A2"].value).lower():
+            raise ValueError("Expected the EPB product summary sheet")
 
-        ytd_date = month_end(fy_start, end_month)
-        prev_ytd = month_end(fy_start - 1, end_month)
-        prev_fy = date(fy_start - 1, 6, 30)
-        prev_month = month_end(fy_start - (end_month == 1), (end_month - 2) % 12 + 1)
-
-        # Column -> (series suffix, observation date). Column 2 is the previous full
-        # fiscal year; 3/4 are fiscal-year-to-date; 6/7/9 are monthly.
-        columns = (
-            (2, "", prev_fy),
-            (3, ".ytd", ytd_date),
-            (4, ".ytd", prev_ytd),
-            (6, ".monthly", ytd_date),
-            (7, ".monthly", prev_month),
-            (9, ".monthly", prev_ytd),
-        )
-        for r in range(7, ws.max_row + 1):
-            label = clean_label(ws.cell(r, 1).value)
+        prev_year = _month_end(when.year - 1, when.month)
+        prev_month = _month_end(when.year - (when.month == 1), (when.month - 2) % 12 + 1)
+        full_fy = date(start, 6, 30)
+        columns = [(1, "", full_fy)]
+        if when.month == 7:
+            # July is both the latest month and the whole year to date.
+            columns += [(2, ".ytd", when), (5, ".ytd", prev_year),
+                        (2, ".monthly", when), (3, ".monthly", prev_month), (5, ".monthly", prev_year)]
+        else:
+            columns += [(2, ".ytd", when), (3, ".ytd", prev_year),
+                        (5, ".monthly", when), (6, ".monthly", prev_month), (8, ".monthly", prev_year)]
+        out: list[Record] = []
+        catalog: dict[str, dict] = {}
+        for row in sheet.iter_rows(min_row=7, max_col=max(c for c, _, _ in columns) + 1, values_only=True):
+            label = clean_label(row[0])
             if not label or label.lower().startswith("all products") or label.lower() == "products" or label.isdigit():
                 continue
-            display = label
-            for _ in range(3):
-                display = re.sub(r"^(?:[A-Z]\.|\(\d+\)|[a-z]\)|[IVX]+\.)\s*", "", display)
-            display = display.strip()
+            display = re.sub(r"^(?:(?:[A-Z]\.|\(\d+\)|[a-z]\)|[IVX]+\.)\s*){1,3}", "", label).strip()
             if not display:
                 continue
             slug = slugify(label)
             for col, suffix, obs_date in columns:
-                v = _num(ws.cell(r, col).value)
-                if v is None:
+                value = _num(row[col])
+                if value is None:
                     continue
                 sid = f"trade.exports.{slug}{suffix}"
-                if sid not in dynamic:
-                    qualifier = (" (FY-to-date)" if suffix == ".ytd"
-                                 else " (monthly)" if suffix == ".monthly"
-                                 else " (full fiscal year)")
-                    dynamic[sid] = {
-                        "id": sid, "module": "external", "name": f"Exports — {display}{qualifier}",
-                        "description": f"EPB export receipts: {label} ({qualifier.strip(' ()')}), USD million.",
-                        "unit": "usd_mn", "frequency": "monthly", "source": "EPB",
-                        "source_url": LANDING, "dimensions": {}, "min_value": 0,
-                        "max_value": 100_000, "max_step": 20_000, "tier": "basic",
-                    }
-                out.append(Record(sid, obs_date, v))
-        wb.close()
-        if dynamic:
-            ensure_series(list(dynamic.values()))
+                if sid not in catalog:
+                    qualifier = {".ytd": "FY-to-date", ".monthly": "monthly", "": "full fiscal year"}[suffix]
+                    catalog[sid] = _series(sid, f"Exports — {display} ({qualifier})",
+                                           f"EPB goods exports: {label} ({qualifier}), USD million.", {})
+                out.append(Record(sid, obs_date, value))
+        if not out:
+            raise ValueError("EPB product summary contained no observations")
+        ensure_series(list(catalog.values()))
         return out
+
+    @staticmethod
+    def _parse_destinations(wb, expected: date) -> list[Record]:
+        summary, chapters = wb["Country Summary"], wb["2 Digit"]
+        for sheet in (summary, chapters):
+            _, when = _workbook_period(sheet)
+            if when != expected:
+                raise ValueError(f"EPB {sheet.title} covers {when}, expected {expected}")
+        if summary["B6"].value != "USD" or chapters["C5"].value != "USD":
+            raise ValueError("Expected EPB destination tables in USD")
+        total_id = "trade.exports.country.ytd"
+        dims = {"country": "EPB destination code"}
+        catalog = {total_id: _series(total_id, "Goods exports by destination (FY-to-date)",
+                                    "EPB goods exports by destination, USD million.", dims)}
+        out: list[Record] = []
+        for label, raw in summary.iter_rows(min_row=7, max_col=2, values_only=True):
+            country = _COUNTRY.match(clean_label(label))
+            value = _num(raw)
+            if country and value is not None:
+                out.append(Record(total_id, expected, value / 1_000_000, {"country": country[1]}))
+        totals_count = len(out)
+        country = None
+        for label, product, raw in chapters.iter_rows(min_row=6, max_col=3, values_only=True):
+            if label:
+                country = _COUNTRY.match(clean_label(label))
+            chapter = _CHAPTER.match(clean_label(product))
+            value = _num(raw)
+            if not country or not chapter or value is None:
+                continue
+            sid = f"trade.exports.hs2.{chapter[1]}.ytd"
+            if sid not in catalog:
+                catalog[sid] = _series(sid, f"Exports HS {chapter[1]} — {chapter[2]} (FY-to-date)",
+                                       "EPB goods exports by HS chapter and destination, USD million.", dims)
+            out.append(Record(sid, expected, value / 1_000_000, {"country": country[1]}))
+        if not totals_count or len(out) == totals_count:
+            raise ValueError("EPB destination or chapter table contained no observations")
+        ensure_series(list(catalog.values()))
+        return out
+
+
+def _series(sid: str, name: str, description: str, dims: dict) -> dict:
+    return {
+        "id": sid, "module": "external", "name": name, "description": description,
+        "unit": "usd_mn", "frequency": "monthly", "source": "EPB", "source_url": LANDING,
+        "dimensions": dims, "min_value": 0, "max_value": 100_000,
+        "max_step": 20_000 if not dims else None, "tier": "basic",
+    }

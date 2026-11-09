@@ -20,20 +20,20 @@ than its expected interval.
 | Job | Source | Writes | Schedule (BST) |
 |---|---|---|---|
 | `bb_web` | Bangladesh Bank HTML pages: daily FX, reserves, remittances, bank rates, money supply, T-bill/T-bond auctions | `fx.*`, `reserves.*`, `remittances.*`, `rates.*`, `monetary.*` | daily 09:20 and 19:20 |
-| `bb_workbook` | BB Monthly Economic Trends workbook (current issue) + the 1972–2024 historical workbook | ~500 macro series in `forex`, `monetary`, `external`, `fiscal`, `real`, `agri`, `industry`, `commodities` | daily 06:20 |
+| `bb_workbook` | BB Monthly Economic Trends Table VIA + the 1972–2024 historical workbook | current industrial production and historical macro series | daily 06:20 |
 | `bb_payments` | BB payment-systems monthly workbook: MFS, cards, internet/mobile banking, QR, agent banking | `payments.*` | daily 06:45 |
-| `bbs_cpi` | BBS CPI release page and monthly CPI workbook | `inflation.cpi.*` | daily 07:10 |
+| `bbs_cpi` | BBS dated release table and monthly CPI workbook | `inflation.cpi.*`, including rural and urban CPI | daily 07:10 |
 | `btrc_telecom` | BTRC monthly mobile/internet subscribers, teledensity and tower tables | `telecom.*` | daily 09:40 |
 | `nbr_revenue` | NBR monthly revenue-collection PDF: customs, VAT, income tax and components | `fiscal.nbr.*` | daily 08:25 |
 | `bpdb_power` | BPDB/NLDC daily system summary: generation, demand, fuel mix, imports, load-shed | `energy.power.*` | daily 10:10 |
-| `dam_prices` | DAM daily division-level retail-price PDFs | `dam_prices` table + `dam.prices.rows` | daily 09:50 |
+| `dam_prices` | DAM daily division-level retail-price archive | `dam_prices` table + `dam.prices.rows` | daily 09:50 |
 | `icb_nav` | ICB AMC daily open-ended fund NAV and market price | `funds.icb.*` | Sun-Thu 17:30 |
 | `amc_nav` | NAV tables from 20 other asset managers (HTML, PDF and JSON) | `funds.<amc>.*` | Sun-Thu 18:15 |
 | `bsec_funds` | BSEC mutual-fund registry: open-end and closed-end issues | `fund_registry` + `funds.registry.funds` | daily 09:30 |
 | `bbs_gdp` | BBS GDP release page and annual GDP workbook | `gdp.*` | daily 07:40 |
-| `bbs_census` | BBS Population & Housing Census 2022: one workbook per district (64) | `regional.census.*` with `dims.district` and `dims.division` | Sunday 03:20 |
+| `bbs_census` | BBS Population & Housing Census 2022: one workbook per district | District series and `regional.census.subdistrict.*` | Sunday 03:20 |
 | `dse_market` | Dhaka Stock Exchange live snapshot, daily archive and instrument list | `market.dse.*`, `dse_indices`, `dse_prices`, `dse_securities` | Sun–Thu 16:30 |
-| `epb_exports` | Export Promotion Bureau monthly export summary workbook | `trade.exports.*` | daily 08:10 |
+| `epb_exports` | EPB goods summary and country-wise workbooks selected by fiscal period | Product lines, destination totals, and HS chapter by destination | daily 08:10 |
 | `tcb_prices` | TCB daily Dhaka retail-price workbook (essential commodities) | `prices.tcb.*` | daily 08:40 |
 | `derive_indicators` | Derived layer from official inputs (real call-money rate, real M2 growth, remittance growth, BDT depreciation) | `derived.*` | daily 10:00 |
 
@@ -56,8 +56,11 @@ Asia/Dhaka) and on `workflow_dispatch`:
 3. Run the selected jobs with `python -m ingestion.run <job> --force`.
 4. Dump Postgres back to R2, export `series/<id>.json`, and sync changed rows to D1.
 
-The default set is every job except `bbs_census` (a one-off 64-workbook census; run it
-manually). Add `bb_payments`/`bbs_gdp` to the input when you need a narrower run.
+The default set is every job except `bbs_census` (run this separately with the `jobs`
+input for the one-off census import). Use `census_limit` to trial a smaller set of
+workbooks before importing the full archive. Set `jobs` to a comma-separated subset for a
+targeted refresh. With `backfill` enabled, EPB and CPI process the recent releases
+listed on their publisher pages in period order.
 
 A manager timeout inside `amc_nav` is a **partial source failure**: the job skips that
 manager, records the remaining count in `funds.amc_nav.managers`, and still succeeds. If
@@ -72,6 +75,8 @@ After the jobs, `scripts.sync_d1` pushes changed rows to the API Worker. D1's fr
 
 1. **Fetch** — the job returns one or more `FetchedFile`s. A fetch that fails everywhere
    raises; returning `[]` would read as healthy and is never allowed.
+   A job can record a missing expected attachment as a fetch warning. If other files
+   are usable, the run is marked partial and their observations are retained.
 2. **Archive** — the raw bytes are written to `RAW_ARCHIVE_DIR` (local volume
    `rawdata`) and, when R2 is configured, mirrored to the bucket. The path is recorded on
    the `ingestion_runs` row.
@@ -87,13 +92,17 @@ After the jobs, `scripts.sync_d1` pushes changed rows to the API Worker. D1's fr
 
 ## Census workbooks
 
-BBS publishes 64 district workbooks. Sheet names vary (`C-01`, `C01`, `C_01`), so the job
-normalises them. It reads only the district headline row (the first administrative unit,
-followed by `Rural`), not the upazila/union rows, and publishes one observation per
-indicator per district with `dims={"district": ..., "division": ...}`. `C-01` supplies
+BBS publishes one workbook per district. Sheet names vary (`C-01`, `C01`, `C_01`), so the job
+normalises them. District series still use the district headline row with
+`dims={"district": ..., "division": ...}`. `C-01` supplies
 population, households and sex ratio; `C-02` age groups; `C-06` education; `C-08`/`C-09`
 work; `C-14`–`C-18` housing, water, sanitation, fuel and household size; `C-03`/`C-13`
 religion and ethnicity; `C-11`/`C-12` connectivity and finance.
+
+Separate upazila and thana series use C-01 geography codes to select totals. They
+also cover age, education, drinking water, sanitation, and household size when a
+unique C-01 subdistrict name matches the corresponding table. District, city
+corporation, union, ward, and village totals are excluded from this series family.
 
 ## Browser-only downloads
 

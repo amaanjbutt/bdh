@@ -4,9 +4,9 @@ Open work, roughly in priority order.
 
 ## Data
 
-1. **Bangladesh Bank current Monthly Economic Trends.** The advertised workbook is frozen
-   at 2021 and the live file is F5-protected. Use the browser fallback
-   (`BROWSER_FETCH=1`) from a workstation, confirm the download, then run `bb_workbook`.
+1. **Bangladesh Bank Monthly Economic Trends.** `bb_workbook` now discovers the current
+   issue and reads industrial production from its verified table. Review the revised
+   layouts in the other tables before adding those series to the current-issue parser.
 2. **BB EasyData.** BB's open-data portal has an API with more series than the workbook.
    Evaluate its quota and coverage; if it is usable, add `bb_easydata_sync` and keep the
    workbook as history.
@@ -22,9 +22,8 @@ Open work, roughly in priority order.
 6. **BERC retail tariff.** The order is a scanned 30-page PDF with no text layer. OCR
    (Tesseract `ben`) reads the prose but not a reliable tariff table; needs a table model
    before it can be published.
-7. **DAM daily prices.** `dam_prices` now reads the text-extractable division PDFs (six
-   divisions, ~270 rows/day). Khulna, Barishal and part of Rangpur are image-only and still
-   need OCR.
+7. **DAM daily prices.** `dam_prices` reads the division archive. Market-level wholesale
+   and retail reports are a separate source to add. Older image-only PDFs still need OCR.
 8. **NBR monthly revenue.** Done for the current template (`nbr_revenue`, June 2026).
    Older NBR PDFs use different templates and are rejected by the subtotal check.
 9. **Mutual funds.** `bsec_funds` covers the 141-fund registry and `amc_nav` covers 86
@@ -32,10 +31,10 @@ Open work, roughly in priority order.
    CSRF-protected paginated POST form), Alliance Capital, UniCap, Bhawal, Meghna,
    Abdul Monem, AIBL AMC, DBH AMC and NCCBL AMC — their sites either have no public NAV
    table or publish only a prospectus. Add adapters as those managers publish.
-10. **Trade by HS product and partner.** EPB gives product receipts; a full customs matrix
-    needs NBR/BB data. Scope the smallest useful table (top 50 products × 20 partners).
-11. **Census sub-district tables.** Add `dims.level=upazila|union` if there is demand; keep
-    it a separate dimension so existing district queries do not change.
+10. **Trade by HS product and partner.** EPB provides fiscal-year-to-date exports by
+    destination and HS chapter. Imports and finer HS detail still need separate sources.
+11. **Census geography.** The district workbooks now support separate upazila and thana
+    totals. Add unions and wards after validating their codes across release layouts.
 12. **Vintage backfill.** The trigger and `?vintage=` work; TCB reprints give one year of
     historical columns. A full multi-issue backfill (BB Monthly Economic Trends archive)
     is still open.

@@ -76,6 +76,9 @@ class IngestionJob:
     # Records dropped by the last validate() call (bounds/date gates).
     last_rejects: list[str] = []
 
+    def __init__(self) -> None:
+        self.fetch_warnings: list[str] = []
+
     # ---- to be implemented by concrete jobs ----------------------------------
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:
@@ -283,12 +286,11 @@ class IngestionJob:
     def run(self, backfill: bool = False) -> dict:
         run_id = self._start_run()
         raw_path: str | None = None
+        self.fetch_warnings.clear()
         try:
             files = self.fetch(backfill=backfill)
             if not files:
-                self._finish(run_id, "no_new_data", 0, None, None)
-                alerting.alert(f"{self.name}: no new data", "Expected data but found none.")
-                return {"status": "no_new_data", "rows": 0}
+                raise ValueError("No source files could be fetched")
 
             # Parse each file independently. A multi-file backfill (hundreds of
             # daily files) must not be lost because one issue has a malformed or
@@ -330,12 +332,13 @@ class IngestionJob:
                         deliver_for_series(series_ids)
                     except Exception as exc:  # noqa: BLE001
                         log.warning("%s: webhook delivery error: %s", self.name, self.redact(str(exc)))
-            if failures:
-                msg = f"{len(failures)}/{len(files)} file(s) skipped: {failures[0]}"
+            issues = self.fetch_warnings + failures
+            if issues:
+                msg = f"{len(issues)} source issue(s): {issues[0]}"
                 self._finish(run_id, "partial", rows, msg, raw_path)
-                alerting.alert(f"{self.name}: some files unparseable", msg)
-                log.info("%s: upserted %d rows (%d files skipped)", self.name, rows, len(failures))
-                return {"status": "partial", "rows": rows, "skipped": len(failures)}
+                alerting.alert(f"{self.name}: partial ingestion", msg)
+                log.info("%s: upserted %d rows (%d source issues)", self.name, rows, len(issues))
+                return {"status": "partial", "rows": rows, "skipped": len(issues)}
             self._finish(run_id, "success", rows, None, raw_path)
             log.info("%s: upserted %d rows", self.name, rows)
             return {"status": "success", "rows": rows}

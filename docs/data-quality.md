@@ -21,8 +21,11 @@ against the publisher's own totals fails.
 
 ### Bangladesh Bank workbooks
 
-- The advertised current `statisticaltable.xlsx` has been frozen at 2021 for a long time.
-  `bb_web` is the live edge; the workbook is the history.
+- The current workbook comes from the Monthly Economic Trends issue archive. The
+  older `statisticaltable.xlsx` is reserved for backfills. Missing current issues
+  are reported separately from the availability of the historical workbook.
+- Table VIA in the current issue continues the industrial production columns
+  previously found in Table VI.
 - The 1972–2024 historical workbook is parsed separately and is the source for long annual
   series.
 - Wide tables have merged headers; `bb_tables.py` expands merged cells and strips numeric
@@ -45,6 +48,9 @@ against the publisher's own totals fails.
   the district headline row only (the first administrative unit followed by `Rural`), not
   upazila/union rows.
 - `Female` must be matched before `Male` when mapping columns; "female" contains "male".
+- The separate subdistrict series identify C-01 upazila and thana rows by the BBS
+  code columns. The other supported tables join by name only where the match is
+  unique within that workbook.
 - Some sheets place column labels on the same row as the administrative-unit header and
   data immediately below; reading one extra header row turns data values into labels.
   The parser reads exactly two header rows.
@@ -60,9 +66,12 @@ against the publisher's own totals fails.
 
 ### EPB exports
 
-- EPB publishes a summary workbook with fiscal-year-to-date and latest-month columns. The
-  parser keeps the product-level receipts in USD million and records the fiscal year in the
-  series id; it does not mix monthly and cumulative values in one series.
+- EPB publishes separate monthly and fiscal-year-to-date product values. The July
+  template has one current value for both measures. January through June use the
+  calendar year in which that fiscal year ends.
+- The country-wise workbook reports destination totals and HS chapters in USD.
+  The API serves those values in USD million, with the publisher destination code
+  in `dims.country`. These series carry fiscal-year-to-date values.
 
 ## Mutual-fund NAVs
 

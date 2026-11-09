@@ -126,24 +126,24 @@ def main() -> None:
     watermark = datetime.now(timezone.utc).isoformat()
 
     with psycopg.connect(dsn) as conn:
-        if args.full or since.startswith("2000-"):
-            series = fetch(conn, f"SELECT {', '.join(SERIES_COLS)} FROM series ORDER BY id")
-        else:
-            # Only series touched since the watermark. Sending all 3,596 every
-            # run costs ~18k D1 writes before a single observation.
-            since_day = since[:10]
-            series = fetch(
-                conn,
-                f"SELECT {', '.join(SERIES_COLS)} FROM series "
-                "WHERE last_date >= %s OR first_date >= %s ORDER BY id",
-                (since_day, since_day),
-            )
         observations = fetch(
             conn,
             f"SELECT {', '.join(OBS_COLS)} FROM observations "
             "WHERE revised_at > %s OR first_seen_at > %s ORDER BY series_id, obs_date, dims",
             (since, since),
         )
+        if args.full or since.startswith("2000-"):
+            series = fetch(conn, f"SELECT {', '.join(SERIES_COLS)} FROM series ORDER BY id")
+        else:
+            # A new or revised historical point can be older than the watermark.
+            # Include its metadata even when both series period bounds are old.
+            since_day = since[:10]
+            series = fetch(
+                conn,
+                f"SELECT {', '.join(SERIES_COLS)} FROM series "
+                "WHERE last_date >= %s OR first_date >= %s OR id = ANY(%s) ORDER BY id",
+                (since_day, since_day, sorted({row["series_id"] for row in observations})),
+            )
         revisions = fetch(
             conn,
             f"SELECT {', '.join(REV_COLS)} FROM observation_revisions "

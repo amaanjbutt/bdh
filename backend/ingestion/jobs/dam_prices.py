@@ -12,6 +12,7 @@ from __future__ import annotations
 import io
 import re
 from datetime import date
+from urllib.parse import urljoin, urlsplit
 
 import pdfplumber
 from bs4 import BeautifulSoup
@@ -21,7 +22,7 @@ from ingestion.bb_tables import clean_label
 from ingestion.catalog import ensure_series
 from ingestion.framework import FetchedFile, IngestionJob, Record
 
-LANDING = "https://dam.gov.bd/pages/marketprice"
+LANDING = "https://dam.gov.bd/pages/static-pages/6922e0d1933eb65569e28b21"
 _BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
 
 DIVISIONS = [
@@ -29,7 +30,7 @@ DIVISIONS = [
     ("চট্টগ্র", "Chattogram"),
     ("খুলনা", "Khulna"),
     ("রাজশাহ", "Rajshahi"),
-    ("র্নরশোি", "Rajshahi"),
+    ("র্নরশোি", "Barishal"),
     ("বরিশাল", "Barishal"),
     ("বিরশাল", "Barishal"),
     ("রংপুর", "Rangpur"),
@@ -37,6 +38,7 @@ DIVISIONS = [
     ("সিলেট", "Sylhet"),
     ("নসরিট", "Sylhet"),
     ("ময়মনসিংহ", "Mymensingh"),
+    ("ময়মনসিংহ", "Mymensingh"),
     ("ময়মিন", "Mymensingh"),
 ]
 
@@ -55,12 +57,13 @@ def _date(raw: str) -> date | None:
 def _range(raw: object) -> tuple[float | None, float | None]:
     if raw is None:
         return None, None
-    nums = [float(x) for x in re.findall(r"\d+(?:\.\d+)?", str(raw).translate(_BN_DIGITS).replace(",", ""))]
-    if not nums:
+    cleaned = str(raw).translate(_BN_DIGITS).replace(",", "").strip()
+    match = re.fullmatch(r"(\d+(?:\.\d+)?)(?:(?:[ \t]*[-–−][ \t]*|[ \t]+)(\d+(?:\.\d+)?))?", cleaned)
+    if not match:
         return None, None
-    if len(nums) == 1:
-        return nums[0], nums[0]
-    return min(nums[0], nums[1]), max(nums[0], nums[1])
+    a = float(match[1])
+    b = float(match[2]) if match[2] else a
+    return min(a, b), max(a, b)
 
 
 def _division(text: str) -> str | None:
@@ -75,76 +78,98 @@ class DamPricesJob(IngestionJob):
     source = "DAM"
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:
-        try:
-            html = http_client.get(LANDING, timeout=60).text
-        except Exception:
-            return []
+        html = http_client.get(LANDING, timeout=60, retry_transient=True).text
         soup = BeautifulSoup(html, "lxml")
-        out: list[FetchedFile] = []
-        seen: set[str] = set()
-        dates = 0
+        reports: dict[date, dict[str, str]] = {}
+        divisions: dict[int, str] = {}
         for tr in soup.find_all("tr"):
-            cells = [c.get_text(" ", strip=True) for c in tr.find_all(["td", "th"])]
-            if len(cells) < 2:
+            cells = tr.find_all(["td", "th"], recursive=False)
+            labels = [c.get_text(" ", strip=True) for c in cells]
+            headings = {i: division for i, label in enumerate(labels) if (division := _division(label))}
+            if headings and any("তারিখ" in label for label in labels[:2]):
+                divisions = headings
                 continue
-            when = _date(cells[1])
-            if when is None:
+            when = next((parsed for label in labels[:2] if (parsed := _date(label))), None)
+            if when is None or when > date.today():
                 continue
-            dates += 1
-            for a in tr.find_all("a", href=True):
-                href = a["href"]
-                if not href.lower().endswith(".pdf") or href in seen:
-                    continue
-                seen.add(href)
+            for index, division in divisions.items():
+                link = cells[index].find("a", href=True) if index < len(cells) else None
+                if link:
+                    href = urljoin(LANDING, link["href"])
+                    if urlsplit(href).path.lower().endswith(".pdf"):
+                        reports.setdefault(when, {})[division] = href
+
+        out: list[FetchedFile] = []
+        recent = sorted(reports)[-(10 if backfill else 3):]
+        for when in recent:
+            for division, href in reports[when].items():
                 try:
-                    content = http_client.get(href, timeout=120).content
+                    content = http_client.get(href, timeout=60, retry_transient=True).content
                     if content[:4] == b"%PDF":
-                        out.append(FetchedFile(f"dam_{when.isoformat()}_{len(out):02d}.pdf", content, when))
+                        out.append(FetchedFile(f"dam_{when}_{division.lower()}.pdf", content, when))
+                        continue
                 except Exception:
-                    continue
-            if dates >= (10 if backfill else 3):
-                break
+                    pass
+                self.fetch_warnings.append(f"DAM {division} report for {when} could not be downloaded")
+        if not recent or not any(f.when == recent[-1] for f in out):
+            raise ValueError("DAM's latest division reports could not be downloaded")
         return out
 
     def parse(self, f: FetchedFile) -> list:
-        rows: list[tuple] = []
-        unit_hints = ("প্রতি", "প্রনি", "কেজি", "লিটার", "হালি", "কুইন্টাল", "মণ", "গ্রাম", "প্যাকেট", "টি")
+        by_product: dict[tuple, dict[str, tuple]] = {}
+        unit_hints = ("প্রতি", "প্রনি", "কেজি", "কেনি", "কেতি", "লিটার", "হালি", "কুইন্টাল", "মণ", "গ্রাম", "টি")
+        archive_division = f.filename.removesuffix(".pdf").rsplit("_", 1)[-1]
         with pdfplumber.open(io.BytesIO(f.content)) as pdf:
-            first = pdf.pages[0].extract_text() or ""
-            division = _division(first)
+            division = next((d for _, d in DIVISIONS if d.lower() == archive_division), None)
             if division is None:
-                return []
+                division = _division(pdf.pages[0].extract_text() or "")
+            if division is None:
+                raise ValueError("DAM report division could not be identified")
             for page in pdf.pages:
                 for table in page.extract_tables():
+                    previous_unit = ""
+                    category = ""
                     for raw in table:
                         if not raw or len(raw) < 6:
                             continue
                         cells = [clean_label(c) for c in raw]
                         unit_idx = None
-                        for i, cell in enumerate(cells):
+                        for i, cell in enumerate(cells[2:4], 2):
                             if any(h in cell for h in unit_hints):
+                                unit_idx = i
+                                previous_unit = cell
+                                break
+                            if cell in {",,", '"'} and previous_unit:
                                 unit_idx = i
                                 break
                         if unit_idx is None:
                             continue
+                        if unit_idx == 3 and cells[1] and cells[0].translate(_BN_DIGITS).isdigit():
+                            category = cells[1]
                         commodity = cells[unit_idx - 1] if unit_idx > 0 else ""
                         if not commodity or commodity.isdigit():
                             commodity = cells[unit_idx - 2] if unit_idx > 1 else ""
                         if not commodity or commodity.translate(_BN_DIGITS).replace(".", "").replace("-", "").isdigit():
                             continue
-                        ranges: list[tuple[float, float]] = []
-                        for cell in cells[unit_idx + 1:]:
-                            nums = [float(x) for x in re.findall(r"\d+(?:\.\d+)?", cell.translate(_BN_DIGITS).replace(",", ""))]
-                            if len(nums) >= 2:
-                                ranges.append((min(nums[0], nums[1]), max(nums[0], nums[1])))
-                        if not ranges:
+                        prices = raw[unit_idx + 1:]
+                        # Most reports alternate the older ranges with percentage
+                        # changes. Some add a reference price or merged cells.
+                        indices = {5: (0, 1, 3), 6: (1, 2, 4), 11: (0, 3, 7)}.get(len(prices))
+                        if indices is None:
                             continue
-                        cmin, cmax = ranges[0]
-                        mmin, mmax = ranges[1] if len(ranges) > 1 else (None, None)
-                        ymin, ymax = ranges[2] if len(ranges) > 2 else (None, None)
-                        rows.append((f.when, division, commodity, cells[unit_idx], cmin, cmax, mmin, mmax, ymin, ymax))
+                        (cmin, cmax), (mmin, mmax), (ymin, ymax) = (_range(prices[i]) for i in indices)
+                        if cmin is not None:
+                            key = (f.when, division, commodity, previous_unit)
+                            by_product.setdefault(key, {})[category if unit_idx == 3 else ""] = (
+                                cmin, cmax, mmin, mmax, ymin, ymax,
+                            )
+        rows = []
+        for (when, division, commodity, unit), variants in by_product.items():
+            for category, prices in variants.items():
+                label = f"{category} — {commodity}" if len(variants) > 1 and category else commodity
+                rows.append((when, division, label, unit, *prices))
         if not rows:
-            return []
+            raise ValueError(f"DAM {division} report has no extractable price rows for {f.when}")
         ensure_series([{
             "id": "dam.prices.rows", "module": "agri",
             "name": "DAM daily price rows",
@@ -169,7 +194,16 @@ class DamPricesJob(IngestionJob):
                         month_ago_min=EXCLUDED.month_ago_min, month_ago_max=EXCLUDED.month_ago_max,
                         year_ago_min=EXCLUDED.year_ago_min, year_ago_max=EXCLUDED.year_ago_max,
                         revised_at=now()
+                    WHERE (dam_prices.current_min, dam_prices.current_max,
+                           dam_prices.month_ago_min, dam_prices.month_ago_max,
+                           dam_prices.year_ago_min, dam_prices.year_ago_max)
+                          IS DISTINCT FROM
+                          (EXCLUDED.current_min, EXCLUDED.current_max,
+                           EXCLUDED.month_ago_min, EXCLUDED.month_ago_max,
+                           EXCLUDED.year_ago_min, EXCLUDED.year_ago_max)
                     """,
                     rows,
                 )
-        return [Record("dam.prices.rows", f.when, len(rows))]
+                cur.execute("SELECT count(*) FROM dam_prices WHERE price_date = %s", (f.when,))
+                count = cur.fetchone()[0]
+        return [Record("dam.prices.rows", f.when, count)]

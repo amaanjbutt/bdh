@@ -1,4 +1,4 @@
-"""BBS Population & Housing Census 2022 — district headline tables.
+"""BBS Population & Housing Census 2022 — district and subdistrict tables.
 
 BBS publishes one workbook per district (64 files) plus a national SDG table.
 The C-01 sheet is the stable headline table (households, population by sex,
@@ -6,8 +6,8 @@ sex ratio); each district workbook lays it out with a slightly different
 column offset, so the parser locates the "Administrative Unit, Location and
 Community" header instead of hardcoding a column.
 
-We publish one observation per indicator per district with
-`dims={"district": name}`, the shape `/v1/regional` already consumes.
+District observations retain their existing IDs and dimensions. Selected
+upazila and thana tables use separate IDs and the publisher's geographic codes.
 """
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ from ingestion.framework import FetchedFile, IngestionJob, Record
 LANDING = "https://bbs.gov.bd/pages/static-pages/6922e073933eb65569e27220"
 CENSUS_DATE = date(2022, 6, 30)
 _AGGREGATES = {"rural", "urban", "total"}
+_SUBDISTRICT_TABLES = {"c01", "c02", "c06", "c15", "c16", "c18"}
 
 # The 64 districts as BBS spells them in the Census 2022 workbooks, grouped by division.
 DISTRICT_DIVISION: dict[str, str] = {
@@ -66,7 +67,7 @@ class BbsCensusJob(IngestionJob):
     source = "BBS"
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:
-        html = http_client.get(LANDING, timeout=60).text
+        html = http_client.get(LANDING, timeout=60, retry_transient=True).text
         soup = BeautifulSoup(html, "lxml")
         links = [a["href"] for a in soup.find_all("a", href=True)
                  if a["href"].lower().endswith(".xlsx") and "office-bbs" in a["href"]]
@@ -76,11 +77,13 @@ class BbsCensusJob(IngestionJob):
         files = []
         for i, url in enumerate(list(dict.fromkeys(links))[:max_files]):
             try:
-                content = http_client.get(url, timeout=120).content
+                content = http_client.get(url, timeout=120, retry_transient=True).content
                 if content.startswith(b"PK"):
                     files.append(FetchedFile(f"bbs_census_{i:02d}.xlsx", content, date.today()))
+                else:
+                    self.fetch_warnings.append(f"Census workbook {i + 1} is not an XLSX")
             except Exception:
-                continue
+                self.fetch_warnings.append(f"Census workbook {i + 1} could not be downloaded")
         return files
 
     def parse(self, f: FetchedFile) -> list[Record]:
@@ -89,6 +92,7 @@ class BbsCensusJob(IngestionJob):
         dynamic: list[dict] = []
         c01 = next((s for s in wb.sheetnames if self._sheet_code(s) == "c01"), None)
         districts = self._c01_districts(wb[c01]) if c01 else set()
+        subdistricts = self._subdistricts(wb[c01], next(iter(districts))) if districts else {}
         for sheet in wb.sheetnames:
             code = self._sheet_code(sheet)
             if code is None:
@@ -110,6 +114,7 @@ class BbsCensusJob(IngestionJob):
             table_name = f"C-{int(code[1:]):02d}" if code.startswith("c") and code[1:].isdigit() else code.upper()
             used: dict[str, int] = {}
             col_ids: dict[int, str] = {}
+            sheet_series: dict[str, dict] = {}
             for c, label in metrics:
                 sid = get_id(label)
                 # Long labels can collide after slug truncation; keep the columns apart.
@@ -120,13 +125,14 @@ class BbsCensusJob(IngestionJob):
                 unit = "percent" if any(k in label.lower() for k in ("rate", "share", "%")) else "count"
                 if sid == "regional.census.sex_ratio":
                     unit = "number"
-                dynamic.append({
+                sheet_series[sid] = {
                     "id": sid, "module": "regional", "name": f"Census 2022 — {label}",
                     "description": f"Population & Housing Census 2022, {table_name}: {label}.",
                     "unit": unit, "frequency": "census", "source": "BBS",
                     "source_url": LANDING, "dimensions": {}, "min_value": -100,
                     "max_value": 100_000_000, "max_step": None, "tier": "basic",
-                })
+                }
+            dynamic.extend(sheet_series.values())
             for r in range(data_start, ws.max_row):
                 name = district_name(ws.cell(r + 1, name_col + 1).value)
                 if not name or name.lower() in _AGGREGATES:
@@ -143,7 +149,45 @@ class BbsCensusJob(IngestionJob):
                     v = _num(ws.cell(r + 1, c + 1).value)
                     if v is not None:
                         out.append(Record(col_ids[c], CENSUS_DATE, v, dims))
+            if code in _SUBDISTRICT_TABLES and subdistricts:
+                for c, _ in metrics:
+                    sid = col_ids[c]
+                    series = sheet_series[sid]
+                    sub_id = sid.replace("regional.census.", "regional.census.subdistrict.", 1)
+                    unit = series["unit"]
+                    if code in {"c15", "c16"} and c > name_col + 1:
+                        unit = "percent"
+                    if code == "c18" and "average household size" in series["name"].lower():
+                        unit = "number"
+                    dynamic.append({
+                        **series, "id": sub_id, "name": f'{series["name"]} (upazila/thana)',
+                        "unit": unit,
+                        "dimensions": {"district": "District name", "division": "Division name",
+                                       "district_code": "BBS district code",
+                                       "subdistrict": "Upazila or thana name",
+                                       "subdistrict_code": "BBS upazila/thana code",
+                                       "city_corporation_code": "BBS city corporation code when present"},
+                    })
+                    col_ids[c] = sub_id
+                if code == "c01":
+                    rows = {name: [tuple(cell.value for cell in ws[index])]
+                            for name, (index, _) in subdistricts.items()}
+                else:
+                    rows = {}
+                    for row in ws.iter_rows(min_row=data_start + 2, values_only=True):
+                        name = clean_label(row[name_col])
+                        if name in subdistricts:
+                            rows.setdefault(name, []).append(row)
+                for name, matches in rows.items():
+                    if len(matches) != 1:
+                        continue
+                    for c, sid in col_ids.items():
+                        v = _num(matches[0][c])
+                        if v is not None:
+                            out.append(Record(sid, CENSUS_DATE, v, subdistricts[name][1]))
         wb.close()
+        if not out:
+            raise ValueError("BBS census workbook contained no supported geographic totals")
         if dynamic:
             # A run parses 64 district workbooks that share almost all series ids.
             # Remember what this run has already upserted so only genuinely new
@@ -156,6 +200,39 @@ class BbsCensusJob(IngestionJob):
                 known.update(d["id"] for d in fresh)
             self._known_series = known
         return out
+
+    def _subdistricts(self, sheet, district: str) -> dict[str, tuple[int, dict[str, str]]]:
+        header = self._header(sheet)
+        if header is None:
+            return {}
+        hr, name_col = header
+        names = [clean_label(sheet.cell(hr + 1, c + 1).value).lower() for c in range(name_col)]
+        district_col = next((i for i, name in enumerate(names) if name == "district"), None)
+        subdistrict_col = next((i for i, name in enumerate(names) if "upazila" in name or "thana" in name), None)
+        city_col = next((i for i, name in enumerate(names) if "city corporation" in name), None)
+        if district_col is None or subdistrict_col is None:
+            return {}
+        result: dict[str, tuple[int, dict[str, str]]] = {}
+        ambiguous: set[str] = set()
+        rows = sheet.iter_rows(min_row=hr + 3, max_col=name_col + 1, values_only=True)
+        for index, row in enumerate(rows, hr + 3):
+            name = clean_label(row[name_col])
+            dist = clean_label(row[district_col])
+            sub = clean_label(row[subdistrict_col])
+            if not name or name.lower() in _AGGREGATES or name.isdigit():
+                continue
+            if not dist.isdigit() or not sub.isdigit() or any(clean_label(v) for v in row[subdistrict_col + 1:name_col]):
+                continue
+            dims = {"district": district, "district_code": dist.zfill(2),
+                    "subdistrict": name, "subdistrict_code": sub.zfill(2)}
+            if district in DISTRICT_DIVISION:
+                dims["division"] = DISTRICT_DIVISION[district]
+            if city_col is not None and (city := clean_label(row[city_col])).isdigit():
+                dims["city_corporation_code"] = city.zfill(2)
+            if name in result:
+                ambiguous.add(name)
+            result[name] = index, dims
+        return {name: entry for name, entry in result.items() if name not in ambiguous}
 
     @staticmethod
     def _plain_header(ws):
