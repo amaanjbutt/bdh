@@ -21,6 +21,9 @@ of its original table — compare growth rates, not index levels across bases.
 ## Coverage
 
 - National, food and non-food indices and inflation
+- Monthly rural and urban indices and inflation, for example `inflation.cpi.rural.yoy`
+- Expenditure divisions by COICOP code across all three areas, for example
+  `inflation.cpi.urban.coicop.04.yoy` for housing and utilities
 - Annual and monthly observations
 - Historical annual series for long-run charts
 - Wage Rate Index by sector and division in the `social` module

@@ -16,7 +16,13 @@ from __future__ import annotations
 import json
 import os
 import re
+from dataclasses import replace
 from datetime import date
+from io import BytesIO
+from urllib.parse import urljoin, urlsplit
+from zipfile import is_zipfile
+
+from bs4 import BeautifulSoup
 
 from ingestion import bb_tables, browser_fetch, http_client
 from ingestion.catalog import CORE
@@ -64,51 +70,62 @@ class BbWorkbookJob(IngestionJob):
 
     def _download(self, url: str) -> bytes | None:
         try:
-            return http_client.get(url, timeout=120).content
+            content = http_client.get(url, timeout=120, retry_transient=True).content
+            if is_zipfile(BytesIO(content)):
+                return content
         except Exception:
-            return browser_fetch.download(url, timeout_ms=120_000)
+            pass
+        content = browser_fetch.download(url, timeout_ms=120_000)
+        return content if content and is_zipfile(BytesIO(content)) else None
 
     def _latest_workbook_url(self) -> str:
         """Resolve the newest et*.xlsx link from the publications page."""
         try:
-            html = http_client.get(LATEST_PAGE, timeout=45).text
+            html = http_client.get(LATEST_PAGE, timeout=60, retry_transient=True).text
         except Exception:
             return ""
-        # Links are relative and may contain a double slash.
-        links = re.findall(r'href=["\']([^"\']*econtrds/et[a-z0-9]+\.xlsx)["\']', html, re.I)
-        if not links:
-            return ""
-        # Page order is newest first.
-        u = links[0]
-        if u.startswith("http"):
-            return u
-        if u.startswith("//"):
-            return "https:" + u
-        return "https://www.bb.org.bd/" + u.lstrip("/")
+        # The publisher uses unquoted, relative href attributes.
+        for link in BeautifulSoup(html, "lxml").select("a[href]"):
+            url = urljoin(LATEST_PAGE, link["href"])
+            if re.search(r"/econtrds/et[a-z0-9]+\.xlsx$", urlsplit(url).path, re.I):
+                return url
+        return ""
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:
         files: list[FetchedFile] = []
-        latest_url = self._latest_workbook_url()
-        current = self._download(latest_url) if latest_url else None
-        if not current or not current.startswith(b"PK"):
-            current = self._download(bb_tables.CURRENT_URL)
-        if current and current.startswith(b"PK"):
-            files.append(FetchedFile("bb_current.xlsx", current, date.today()))
-
         hist = self._download(bb_tables.HISTORICAL_URL)
         if hist:
             files.append(FetchedFile("bb_historical.xlsx", hist, date.today()))
+        elif backfill:
+            self.fetch_warnings.append("Bangladesh Bank historical workbook could not be downloaded")
+        if backfill and (legacy := self._download(bb_tables.CURRENT_URL)):
+            files.append(FetchedFile("bb_current.xlsx", legacy, date.today()))
+        latest_url = self._latest_workbook_url()
+        latest = self._download(latest_url) if latest_url else None
+        if latest:
+            files.append(FetchedFile("bb_latest.xlsx", latest, date.today()))
+        else:
+            self.fetch_warnings.append("Latest Bangladesh Bank Monthly Economic Trends workbook unavailable")
         return files
 
     def parse(self, f: FetchedFile) -> list[Record]:
         if f.filename.startswith("bb_historical"):
             _, recs = bb_tables.parse_workbook_bytes(f.content, bb_tables.HISTORICAL_SPECS)
+        elif f.filename == "bb_latest.xlsx":
+            industry = next(spec for spec in bb_tables.CURRENT_SPECS if spec.sheet == "Table VI")
+            # The current issue moved and reorganised several tables. Only use
+            # the verified industrial layout from it. bb_web owns live macro IDs.
+            _, recs = bb_tables.parse_workbook_bytes(f.content, [industry, replace(industry, sheet="Table VIA")])
+            if not recs:
+                raise ValueError("Latest Bangladesh Bank workbook has no industrial production observations")
         else:
             _, recs = bb_tables.parse_workbook_bytes(f.content, bb_tables.CURRENT_SPECS)
         units = _target_units()
         out = []
         for r in recs:
             fid = r["series_id"]
+            if f.filename == "bb_latest.xlsx" and fid not in units:
+                continue
             factor = _factor(r.get("unit", ""), units.get(fid, ""))
             value = r["value"] * factor if r["value"] is not None else None
             out.append(Record(

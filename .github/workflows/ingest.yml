@@ -17,9 +17,16 @@ on:
   workflow_dispatch:
     inputs:
       jobs:
-        description: "Comma-separated ingestion jobs"
+        description: "Comma-separated ingestion jobs (blank runs the daily set)"
         required: false
-        default: "bb_web,bb_workbook,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators"
+      backfill:
+        description: "Read recent historical releases for the explicitly selected jobs"
+        type: boolean
+        default: false
+      census_limit:
+        description: "Maximum district workbooks when running bbs_census"
+        type: number
+        default: 64
       full_sync:
         description: "Send the whole Postgres snapshot to D1 (slower)"
         type: boolean
@@ -75,37 +82,56 @@ jobs:
       - name: Install
         run: pip install -q -r requirements.txt
 
-      - name: Restore Postgres snapshot (or initialise a fresh store)
+      - name: Restore Postgres snapshot and back up manual runs
         id: restore
+        env:
+          PERSISTENT_DB: ${{ secrets.DATABASE_URL != '' }}
         run: |
           set -e
-          if [ -n "${{ secrets.DATABASE_URL }}" ]; then
+          backup_key="postgres/backups/pre-ingest-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT.dump"
+          if [ "$PERSISTENT_DB" = "true" ]; then
             echo "persistent=true" >> "$GITHUB_OUTPUT"
             echo "using the persistent DATABASE_URL; skipping the R2 snapshot"
-            python -m db.init
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+              pg_dump -Fc -d "$DATABASE_URL" -f /tmp/bd-before.dump
+              python -m scripts.r2_snapshot upload /tmp/bd-before.dump --key "$backup_key"
+            fi
             exit 0
           fi
           echo "persistent=false" >> "$GITHUB_OUTPUT"
-          if python -m scripts.r2_snapshot download /tmp/bd.dump; then
-            pg_restore --clean --if-exists --no-owner --no-privileges -d "$DATABASE_URL" /tmp/bd.dump
-            echo "restored the R2 snapshot"
-          else
-            echo "no snapshot yet; initialising a fresh Postgres"
+          python -m scripts.r2_snapshot download /tmp/bd.dump
+          pg_restore --exit-on-error --clean --if-exists --no-owner --no-privileges -d "$DATABASE_URL" /tmp/bd.dump
+          echo "restored the R2 snapshot"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            python -m scripts.r2_snapshot upload /tmp/bd.dump --key "$backup_key"
           fi
           python -m db.init
 
       - name: Run ingestion jobs
         id: jobs
         shell: bash
+        env:
+          REQUESTED_JOBS: ${{ inputs.jobs }}
+          BACKFILL: ${{ inputs.backfill }}
+          CENSUS_MAX_FILES: ${{ inputs.census_limit || 64 }}
+          DAILY_JOBS: "bb_workbook,bb_web,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators"
         run: |
           set +e
           status=0
-          IFS=',' read -ra JOBS <<< "${{ inputs.jobs || 'bb_web,bb_workbook,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators' }}"
+          flags=(--force)
+          if [ "$BACKFILL" = "true" ]; then
+            if [ -z "$REQUESTED_JOBS" ]; then
+              echo "::error::Select jobs explicitly for a backfill"
+              exit 1
+            fi
+            flags+=(--backfill)
+          fi
+          IFS=',' read -ra JOBS <<< "${REQUESTED_JOBS:-$DAILY_JOBS}"
           for job in "${JOBS[@]}"; do
             job="$(echo "$job" | xargs)"
             [ -z "$job" ] && continue
             echo "::group::$job"
-            python -m ingestion.run "$job" --force
+            python -m ingestion.run "$job" "${flags[@]}"
             rc=$?
             echo "::endgroup::"
             if [ $rc -ne 0 ]; then
@@ -127,7 +153,7 @@ jobs:
         run: python -m scripts.export_r2_series
 
       - name: Sync changed rows into D1
-        if: always()
+        if: always() && steps.restore.outcome == 'success'
         run: |
           if [ -z "$D1_SYNC_TOKEN" ]; then
             echo "::warning::D1_SYNC_TOKEN is not set; skipping the D1 sync"

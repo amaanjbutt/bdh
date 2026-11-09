@@ -172,9 +172,11 @@ pg_dump -Fc -d "$DATABASE_URL" -f /tmp/bd.dump
 python -m scripts.r2_snapshot upload /tmp/bd.dump
 ```
 
-The workflow only uploads after a **successful restore**, so a failed restore
-cannot overwrite the last good snapshot. If a bad snapshot is ever uploaded,
-restore `backend/data/bangladata.dump` from the owner's machine and upload it.
+The workflow stops if the current R2 snapshot cannot be downloaded or restored.
+Manual runs retain the pre-run dump under `postgres/backups/pre-ingest-<run-id>-<attempt>.dump`.
+Before a manual production refresh, record a serving database recovery point with
+`wrangler d1 time-travel info bangladatahub`. If a bad snapshot is ever uploaded,
+restore the appropriate saved dump before resuming ingestion.
 
 ## R2 per-series flat-file mirror
 
@@ -194,6 +196,7 @@ Full daily set (the default), or a subset:
 ```bash
 gh workflow run ingest.yml --repo amaanjbutt/bdh
 gh workflow run ingest.yml --repo amaanjbutt/bdh -f jobs=dam_prices
+gh workflow run ingest.yml --repo amaanjbutt/bdh -f jobs=bbs_census -f census_limit=2
 gh workflow run ingest.yml --repo amaanjbutt/bdh -f full_sync=true
 ```
 

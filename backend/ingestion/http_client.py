@@ -21,6 +21,7 @@ from urllib.parse import quote, urlsplit
 from app.config import settings
 
 try:  # curl_cffi is optional; degrade to httpx if missing
+    from curl_cffi import CurlError
     from curl_cffi import requests as _cr
 
     _HAVE_CFFI = True
@@ -28,6 +29,10 @@ except Exception:  # pragma: no cover
     _HAVE_CFFI = False
 
 import httpx
+
+_TRANSPORT_ERRORS = (httpx.TransportError, CurlError) if _HAVE_CFFI else (httpx.TransportError,)
+# DNS/connect failures, incomplete responses, timeouts, and broken transfers.
+_RETRYABLE_CURL_CODES = {5, 6, 7, 16, 18, 28, 52, 55, 56, 92}
 
 _IMPERSONATE = os.getenv("INGEST_IMPERSONATE", "chrome")
 
@@ -126,21 +131,33 @@ def _retry_after(resp, default: int) -> int:
         return default
 
 
-def get(url: str, timeout: int = 30, headers: dict | None = None):
+def get(url: str, timeout: int = 30, headers: dict | None = None, *, retry_transient: bool = False):
     """GET returning a response with `.content` / `.text` / `.status_code`.
 
     Backs off on 429 (source rate-limit) rather than failing the run — official
-    sources throttle bursty callers, so we honour Retry-After and retry twice."""
+    sources throttle bursty callers, so we honour Retry-After. Large releases can
+    opt into retrying incomplete transfers, timeouts and temporary server errors."""
     url, headers = relayed(url, headers)
     for attempt in range(4):
-        if _HAVE_CFFI:
-            resp = _sess().get(url, proxies=_proxies_for(url), timeout=timeout, headers=headers,
-                               verify=_verify_for(url), allow_redirects=True)
-        else:
-            resp = httpx.get(
-                url, headers={"User-Agent": settings.user_agent, **(headers or {})}, timeout=timeout,
-                follow_redirects=True, verify=_verify_for(url),
-            )
+        try:
+            if _HAVE_CFFI:
+                resp = _sess().get(url, proxies=_proxies_for(url), timeout=timeout, headers=headers,
+                                   verify=_verify_for(url), allow_redirects=True)
+            else:
+                resp = httpx.get(
+                    url, headers={"User-Agent": settings.user_agent, **(headers or {})}, timeout=timeout,
+                    follow_redirects=True, verify=_verify_for(url),
+                )
+        except _TRANSPORT_ERRORS as exc:
+            if (not retry_transient or attempt >= 2
+                    or getattr(exc, "code", 28) not in _RETRYABLE_CURL_CODES):
+                raise
+            reset_session()
+            time.sleep(2 ** attempt)
+            continue
+        if retry_transient and resp.status_code in {500, 502, 503, 504} and attempt < 2:
+            time.sleep(_retry_after(resp, 2 ** attempt))
+            continue
         if resp.status_code == 429 and attempt < 3:
             time.sleep(_retry_after(resp, 10))
             continue

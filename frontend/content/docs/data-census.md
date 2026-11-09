@@ -1,6 +1,6 @@
 ---
 title: Census 2022 district data
-description: Population, households, age structure and SDG indicators for all 64 districts.
+description: District indicators and published upazila or thana totals from the BBS census.
 section: Datasets
 order: 5
 ---
@@ -20,6 +20,14 @@ one workbook per district with tables C-01 to C-18 and an SDG union table.
 - Internet, mobile-phone ownership and financial accounts (C-11, C-12)
 - SDG indicators at district level
 
-Every observation is one district on 2022-06-30, with
+District observations are dated 2022-06-30, with
 `dims={"district": "Dhaka", "division": "Dhaka"}`.
 The district explorer at [/districts](/districts) joins the headline series into one profile.
+
+Upazila and thana totals are available separately under `regional.census.subdistrict.*`.
+They cover population, households, sex ratio, age, education, drinking water,
+sanitation, and household size where the workbook identifies the subdistrict.
+Filter the population series with
+`/v1/series/regional.census.subdistrict.population?dims=district:Barishal`.
+The returned dimensions include the BBS district and subdistrict codes, plus a
+city corporation code when BBS supplies one.

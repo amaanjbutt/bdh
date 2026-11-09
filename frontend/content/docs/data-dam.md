@@ -19,6 +19,7 @@ reads the division PDFs whose table is text-extractable and stores them in `dam_
 Rows carry `division`, `commodity`, `unit`, `current_min`, `current_max`,
 `month_ago_min`, `month_ago_max`, `year_ago_min`, `year_ago_max`.
 
-Some division PDFs are image-only or use a layout the parser cannot read; those are
-skipped rather than published with wrong values. Six divisions are currently covered
-(Dhaka, Chattogram, Rajshahi, Sylhet, Mymensingh and part of Rangpur).
+Division names come from the daily archive's column headings. Coverage varies by
+report date and by PDF layout. Image-only PDFs and unrecognised tables are recorded
+as ingestion issues. If a historical price cell is blank or unreadable, its value
+is null.

@@ -1,16 +1,16 @@
 """BBS monthly CPI release (national, rural, urban, WRI) from the official workbook.
 
-BBS publishes one XLSX per monthly release on its legacy `site/page` hub, with
-UUID-named files on Oracle Object Storage. The landing page is the discovery
-layer; the workbook is the data layer. We resolve the newest workbook by
-downloading the recent XLSX links and checking the sheet names, so a UUID change
-never breaks the job.
+BBS publishes a dated table of links to the monthly releases. Each workbook
+contains separate national, rural and urban tables, plus wage statistics.
 """
 from __future__ import annotations
 
 import io
 import re
-from datetime import date
+from calendar import month_name, monthrange
+from datetime import date, datetime
+from hashlib import sha256
+from urllib.parse import urljoin, urlsplit
 
 import openpyxl
 from bs4 import BeautifulSoup
@@ -20,8 +20,9 @@ from ingestion.bb_tables import _parse_period, slugify
 from ingestion.catalog import ensure_series
 from ingestion.framework import FetchedFile, IngestionJob, Record
 
-LANDING = "https://bbs.gov.bd/site/page/29b379ff-7bac-41d9-b321-e41929bab4a1/CPI-and-QIIP"
+LANDING = "https://bbs.gov.bd/pages/static-pages/6922de7a933eb65569e1ae8f"
 SOURCE_URL = LANDING
+_MONTHS = {name.lower(): i for i, name in enumerate(month_name) if i}
 
 # label in BBS table -> catalog id for the national all-items series
 _CPI_LABELS = {
@@ -39,8 +40,10 @@ def _date_for_header(cell: str) -> date | None:
     s = str(cell or "").strip().replace("’", "'")
     m = re.match(r"([A-Za-z]{3})[a-z]*\s*'?\s*(\d{2,4})", s)
     if m:
-        from datetime import datetime
-        month = datetime.strptime(m.group(1), "%b").month
+        try:
+            month = datetime.strptime(m.group(1), "%b").month
+        except ValueError:
+            return None
         y = int(m.group(2))
         if y < 100:
             y += 2000
@@ -54,7 +57,7 @@ def _date_for_header(cell: str) -> date | None:
     return None
 
 
-def _parse_cpi_sheet(ws) -> list[Record]:
+def _parse_cpi_sheet(ws, area: str = "national", group_names: dict[str, str] | None = None) -> list[Record]:
     # Month labels live in row 5 (1-based); annual headings are rows 3-4.
     # Prefer the month label when both apply to the same column.
     header_rows = [5, 4, 3]
@@ -71,24 +74,32 @@ def _parse_cpi_sheet(ws) -> list[Record]:
     out: list[Record] = []
     # Track the last classification label so "Inflation" rows under a group
     # inherit the group's id.
-    current = None
+    base = None
     for r in range(6, ws.max_row + 1):
-        label = str(ws.cell(r, 1).value or "").strip().lower()
+        raw = " ".join(str(ws.cell(r, 1).value or "").split())
+        label = raw.lower()
         if not label:
             continue
         if label in _CPI_LABELS:
-            current = _CPI_LABELS[label]
-            sid = current[0]
-        elif label.startswith("inflation") and current:
-            # A food/non-food inflation row follows its index row. Strip any
-            # suffix left by a previous inflation row so Food gets food.yoy,
-            # not national.yoy.
-            base = re.sub(r"\.(yoy|mom)$", "", current[0])
-            sid = base + _CPI_INFLATION.get(label, ".yoy")
+            base = _CPI_LABELS[label][0]
+            if area != "national":
+                item = base.rsplit(".", 1)[-1]
+                base = f"inflation.cpi.{area}" + (f".{item}" if item != "national" else "")
+            sid = base
+        elif group_names is not None and (group := re.fullmatch(r"(0[1-9]|1[0-2])\.\s*(.+)", raw)):
+            base = sid = f"inflation.cpi.{area}.coicop.{group[1]}"
+            group_names[base] = group[2]
+        elif label in _CPI_INFLATION and base:
+            sid = base + _CPI_INFLATION[label]
         else:
-            current = None
+            base = None
             continue
+        monthly_only = area != "national" or ".coicop." in sid
         for c, d in dates.items():
+            if monthly_only:
+                if d.day != 1:
+                    continue
+                d = d.replace(day=monthrange(d.year, d.month)[1])
             v = ws.cell(r, c).value
             if isinstance(v, (int, float)):
                 out.append(Record(sid, d, float(v)))
@@ -165,39 +176,38 @@ class BbsCpiJob(IngestionJob):
     source = "BBS"
 
     def fetch(self, backfill: bool = False) -> list[FetchedFile]:
-        html = http_client.get(LANDING, timeout=60).text
-        soup = BeautifulSoup(html, "lxml")
-        links = []
-        for a in soup.find_all("a", href=True):
-            href = a["href"]
-            if href.lower().endswith(".xlsx") and "office-bbs" in href:
-                links.append(href)
-        # Newest first; the page interleaves 2025 and 2026 release files.
-        def release_key(u: str) -> tuple[int, int]:
-            m = re.search(r"/office-bbs/(\d{4})/(\d{1,2})/", u)
-            return (int(m.group(1)), int(m.group(2))) if m else (0, 0)
-
-        links = sorted(dict.fromkeys(links), key=release_key, reverse=True)
-        for url in links[:20]:
+        html = http_client.get(LANDING, timeout=90, retry_transient=True).text
+        releases = _cpi_releases(html)
+        periods = sorted(period for period in releases if period <= date.today())
+        if not periods:
+            raise ValueError("No dated BBS CPI workbooks found")
+        files = []
+        for when in periods[-(12 if backfill else 1):]:
             try:
-                content = http_client.get(url, timeout=90).content
-                wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True, data_only=True)
-                has = any("CPI_National" in n for n in wb.sheetnames)
-                wb.close()
-                if has:
-                    return [FetchedFile("bbs_cpi.xlsx", content, date.today())]
+                content = http_client.get(releases[when], timeout=90, retry_transient=True).content
             except Exception:
+                if not backfill:
+                    raise
+                self.fetch_warnings.append(f"BBS CPI workbook for {when} could not be downloaded")
                 continue
-        return []
+            digest = sha256(content).hexdigest()[:12]
+            files.append(FetchedFile(f"bbs_cpi_{when}_{digest}.xlsx", content, when))
+        return files
 
     def parse(self, f: FetchedFile) -> list[Record]:
         wb = openpyxl.load_workbook(io.BytesIO(f.content), data_only=True)
         out: list[Record] = []
         dynamic: list[dict] = []
+        national: list[Record] = []
+        group_names: dict[str, str] = {}
         for name in wb.sheetnames:
             ws = wb[name]
             if name == "Table-1.3_CPI_National":
-                out += _parse_cpi_sheet(ws)
+                national = _parse_cpi_sheet(ws, group_names=group_names)
+                out += national
+            elif name in {"Table-1.4_CPI_Rural", "Table-1.5_CPI_Urban"}:
+                area = name.rsplit("_", 1)[-1].lower()
+                out += _parse_cpi_sheet(ws, area, group_names)
             elif "Historical Data_CPI" in name:
                 out += _parse_historical(ws)
             elif name.startswith("Table-2.") and "WRI" in name:
@@ -208,6 +218,15 @@ class BbsCpiJob(IngestionJob):
                 dynamic += cat
                 out += recs
         wb.close()
+        if not national or (f.filename.startswith("bbs_cpi_") and not any(
+            r.series_id == "inflation.cpi.national.yoy" and r.obs_date == f.when.replace(day=1)
+            for r in national
+        )):
+            raise ValueError(f"BBS CPI workbook did not contain the expected national release for {f.when}")
+        dynamic.extend(_area_series(sid, group_names) for sid in sorted({
+            r.series_id for r in out
+            if ".coicop." in r.series_id or r.series_id.startswith(("inflation.cpi.rural", "inflation.cpi.urban"))
+        }))
         if dynamic:
             ensure_series(dynamic)
         # Historical long inflation inflation IDs are not in the BB catalog.
@@ -246,3 +265,44 @@ class BbsCpiJob(IngestionJob):
              "max_value": 50, "max_step": 15, "tier": "basic"},
         ])
         return out
+
+
+def _cpi_releases(html: str) -> dict[date, str]:
+    releases = {}
+    for table in BeautifulSoup(html, "lxml").find_all("table"):
+        rows = table.find_all("tr")
+        if not rows:
+            continue
+        headings = [cell.get_text(strip=True).lower() for cell in rows[0].find_all(["td", "th"])]
+        columns = [(i, int(year[1])) for i, heading in enumerate(headings[:-2])
+                   if (year := re.fullmatch(r"year\s*-?\s*(\d{4})", heading))
+                   and headings[i + 2] == "excel"]
+        for row in rows[1:]:
+            cells = row.find_all(["td", "th"])
+            for i, year in columns:
+                if i + 2 >= len(cells):
+                    continue
+                month = _MONTHS.get(cells[i].get_text(strip=True).lower())
+                link = cells[i + 2].find("a", href=True)
+                if month and link:
+                    url = urljoin(LANDING, link["href"])
+                    if urlsplit(url).path.lower().endswith(".xlsx"):
+                        releases[date(year, month, monthrange(year, month)[1])] = url
+    return releases
+
+
+def _area_series(sid: str, group_names: dict[str, str]) -> dict:
+    area, *parts = sid.removeprefix("inflation.cpi.").split(".")
+    change = parts and parts[-1] in {"yoy", "mom"}
+    item = parts[0].replace("_", "-") if parts and parts[0] in {"food", "non_food"} else "all items"
+    if parts and parts[0] == "coicop":
+        item = group_names[".".join(sid.split(".")[:5])]
+    measure = {"yoy": "inflation YoY", "mom": "inflation MoM"}[parts[-1]] if change else "index"
+    name = f"CPI {measure} ({area}, {item})"
+    return {
+        "id": sid, "module": "inflation", "name": name,
+        "description": f"BBS {name}, 2021–22 base.", "unit": "percent" if change else "index",
+        "frequency": "monthly", "source": "BBS", "source_url": SOURCE_URL, "dimensions": {},
+        "min_value": -50 if change else 0, "max_value": 100 if change else 10000,
+        "max_step": None, "tier": "basic",
+    }
