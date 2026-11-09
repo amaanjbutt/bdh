@@ -27,6 +27,14 @@ on:
         description: "Maximum district workbooks when running bbs_census"
         type: number
         default: 64
+      staged_release:
+        description: "SHA-256 of a verified publisher ZIP staged in private R2 (optional)"
+        type: string
+        required: false
+      staging_public_key:
+        description: "Base64 RSA public key for an encrypted staged-upload link (upload preparation only)"
+        type: string
+        required: false
       full_sync:
         description: "Send the whole Postgres snapshot to D1 (slower)"
         type: boolean
@@ -82,8 +90,16 @@ jobs:
       - name: Install
         run: pip install -q -r requirements.txt
 
+      - name: Prepare encrypted staged upload link
+        if: inputs.staging_public_key != ''
+        env:
+          STAGED_RELEASE: ${{ inputs.staged_release }}
+          STAGING_PUBLIC_KEY: ${{ inputs.staging_public_key }}
+        run: python -m scripts.presign_staged_release "$STAGED_RELEASE" "$STAGING_PUBLIC_KEY"
+
       - name: Restore Postgres snapshot and back up manual runs
         id: restore
+        if: inputs.staging_public_key == ''
         env:
           PERSISTENT_DB: ${{ secrets.DATABASE_URL != '' }}
         run: |
@@ -109,16 +125,26 @@ jobs:
 
       - name: Run ingestion jobs
         id: jobs
+        if: steps.restore.outcome == 'success'
         shell: bash
         env:
           REQUESTED_JOBS: ${{ inputs.jobs }}
           BACKFILL: ${{ inputs.backfill }}
           CENSUS_MAX_FILES: ${{ inputs.census_limit || 64 }}
+          STAGED_RELEASE: ${{ inputs.staged_release }}
           DAILY_JOBS: "bb_workbook,bb_web,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,tcb_prices,derive_indicators"
         run: |
           set +e
           status=0
           flags=(--force)
+          if [ -n "$STAGED_RELEASE" ]; then
+            if [[ ! "$STAGED_RELEASE" =~ ^[a-f0-9]{64}$ ]] || [ -z "$REQUESTED_JOBS" ]; then
+              echo "::error::A staged release requires a SHA-256 and explicit jobs"
+              exit 1
+            fi
+            python -m scripts.r2_snapshot download /tmp/bd-staged.zip --key "raw/manual/$STAGED_RELEASE.zip" || exit 1
+            echo "$STAGED_RELEASE  /tmp/bd-staged.zip" | sha256sum --check --status || exit 1
+          fi
           if [ "$BACKFILL" = "true" ]; then
             if [ -z "$REQUESTED_JOBS" ]; then
               echo "::error::Select jobs explicitly for a backfill"
@@ -131,7 +157,11 @@ jobs:
             job="$(echo "$job" | xargs)"
             [ -z "$job" ] && continue
             echo "::group::$job"
-            python -m ingestion.run "$job" "${flags[@]}"
+            if [ -n "$STAGED_RELEASE" ]; then
+              python -m scripts.replay_releases "$job" /tmp/bd-staged.zip
+            else
+              python -m ingestion.run "$job" "${flags[@]}"
+            fi
             rc=$?
             echo "::endgroup::"
             if [ $rc -ne 0 ]; then
@@ -166,7 +196,7 @@ jobs:
           fi
 
       - name: Fail the run if any job failed
-        if: steps.jobs.outputs.status != '0'
+        if: steps.restore.outcome == 'success' && steps.jobs.outputs.status != '0'
         run: |
           echo "one or more ingestion jobs failed"
           exit 1

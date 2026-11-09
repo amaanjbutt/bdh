@@ -1,15 +1,24 @@
+import base64
+import json
 from datetime import date
 from io import BytesIO
 from types import SimpleNamespace
 from unittest.mock import MagicMock, Mock
+from zipfile import ZipFile
 
 import httpx
+import pytest
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from openpyxl import Workbook
 
 from app import db
 from ingestion import http_client
 from ingestion.framework import FetchedFile
 from ingestion.jobs import bb_workbook, bbs_census, bbs_cpi, dam_prices, epb_exports
+from scripts.presign_staged_release import encrypt_url
+from scripts.replay_releases import read_files
 
 
 def workbook_file(workbook, filename, when):
@@ -192,3 +201,32 @@ def test_dam_keeps_dhaka_prices_for_distinct_categories(monkeypatch):
     assert len({row[:4] for row in prices}) == 3
     assert {row[4:6] for row in prices} == {(60, 70), (45, 52), (110, 120)}
     assert result[0].value == 3
+
+
+def test_staged_release_reads_in_period_order_and_rejects_path_components():
+    buffer = BytesIO()
+    manifest = {
+        "bbs_cpi": [{"filename": "new.xlsx", "when": "2026-10-31"},
+                    {"filename": "old.xlsx", "when": "2026-09-30"}],
+        "epb_exports": [{"filename": "../outside.xlsx", "when": "2026-10-31"}],
+    }
+    with ZipFile(buffer, "w") as bundle:
+        bundle.writestr("manifest.json", json.dumps(manifest))
+        bundle.writestr("bbs_cpi/new.xlsx", b"new")
+        bundle.writestr("bbs_cpi/old.xlsx", b"old")
+    with ZipFile(buffer) as bundle:
+        assert [f.content for f in read_files(bundle, "bbs_cpi")] == [b"old", b"new"]
+        with pytest.raises(ValueError, match="filename"):
+            read_files(bundle, "epb_exports")
+
+
+def test_staged_upload_url_can_only_be_read_with_the_private_key():
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    url = "https://example.test/upload"
+    envelope = encrypt_url(private_key.public_key(), url)
+    assert url not in envelope
+    parts = {k: base64.b64decode(v) for k, v in json.loads(envelope).items()}
+    key = private_key.decrypt(
+        parts["key"], padding.OAEP(mgf=padding.MGF1(hashes.SHA256()), algorithm=hashes.SHA256(), label=None)
+    )
+    assert AESGCM(key).decrypt(parts["nonce"], parts["ciphertext"], None).decode() == url
