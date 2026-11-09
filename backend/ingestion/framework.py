@@ -283,12 +283,12 @@ class IngestionJob:
             (self.name, datetime.now(timezone.utc)),
         )["id"]
 
-    def run(self, backfill: bool = False) -> dict:
+    def run(self, backfill: bool = False, *, staged_files: list[FetchedFile] | None = None) -> dict:
         run_id = self._start_run()
         raw_path: str | None = None
         self.fetch_warnings.clear()
         try:
-            files = self.fetch(backfill=backfill)
+            files = self.fetch(backfill=backfill) if staged_files is None else staged_files
             if not files:
                 raise ValueError("No source files could be fetched")
 

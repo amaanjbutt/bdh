@@ -211,6 +211,15 @@ The default job set is `bb_web,bb_workbook,bbs_cpi,btrc_telecom,nbr_revenue,
 bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,
 tcb_prices,derive_indicators`. A full run takes roughly 8 minutes in practice.
 
+If the runner cannot reach a public publisher, a manual run can replay verified
+files for `bbs_cpi`, `epb_exports`, `dam_prices`, or `bbs_census`. Put a ZIP in the
+private bucket at `raw/manual/<sha256>.zip` and pass its SHA-256 as
+`staged_release` with explicit `jobs`. The ZIP contains a root `manifest.json`
+mapping job names to lists of `{"filename": "...", "when": "YYYY-MM-DD"}`
+entries, and each file lives at `<job>/<filename>` inside the ZIP. Keep the normal
+ingestion filenames and publisher dates. The runner verifies the bundle hash and
+archives each source file before parsing.
+
 ## Custom domain
 
 `bangladatahub.com` is **not in the current Cloudflare account**. To attach it:
