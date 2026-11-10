@@ -207,9 +207,16 @@ gh run list --repo amaanjbutt/bdh --workflow ingest.yml --limit 3
 gh run view <run-id> --repo amaanjbutt/bdh --log
 ```
 
-The default job set is `bb_web,bb_workbook,bbs_cpi,btrc_telecom,nbr_revenue,
+The default job set is `bb_web,bb_workbook,bb_payments,bbs_cpi,bbs_gdp,btrc_telecom,nbr_revenue,
 bpdb_power,dam_prices,bsec_funds,icb_nav,amc_nav,dse_market,epb_exports,
 tcb_prices,derive_indicators`. A full run takes roughly 8 minutes in practice.
+
+GitHub fetches BBS, EPB, DAM and BTRC release pages through the
+`bdh-publisher-fetch` Worker. Deploy its code from `ops/relay` with
+`wrangler deploy --name bdh-publisher-fetch`. Set the repository variable
+`FETCH_RELAY_URL` to the Worker URL. Install the same key as the Worker secret
+`RELAY_KEY` and the GitHub Actions secret `FETCH_RELAY_KEY`. The Worker checks
+the permitted public publisher paths on each redirect.
 
 If the runner cannot reach a public publisher, a manual run can replay verified
 files for `bbs_cpi`, `epb_exports`, `dam_prices`, or `bbs_census`. Put a ZIP in the

@@ -56,10 +56,8 @@ def _parse_map(raw: str) -> list[tuple[str, str]]:
 
 _PROXY_MAP = _parse_map(os.getenv("INGEST_PROXY_MAP", ""))
 
-# Relay (ops/relay/, a Cloudflare Worker): hosts that drop connections from every datacenter we have
-# but answer Cloudflare's network — pta.gov.pk since Aug-2026 — are fetched through it when
-# FETCH_RELAY_URL + FETCH_RELAY_KEY are set (VPS .env). FETCH_RELAY_HOSTS: comma-separated host
-# substrings (default pta.gov.pk). Elsewhere (PC, tests) the variables are unset and hosts go direct.
+# The authenticated Cloudflare relay reaches publisher release pages that time
+# out from GitHub. Workstations without relay configuration fetch directly.
 _RELAY = (os.getenv("FETCH_RELAY_URL") or "").rstrip("/") or None
 _RELAY_KEY = os.getenv("FETCH_RELAY_KEY") or ""
 _RELAY_HOSTS = [h.strip() for h in os.getenv("FETCH_RELAY_HOSTS", "pta.gov.pk").split(",") if h.strip()]
@@ -82,7 +80,7 @@ def _verify_for(url: str) -> bool:
 def relayed(url: str, headers: dict | None = None) -> tuple[str, dict | None]:
     """(url, headers) to actually request: the relay's URL + key for relayed hosts, else unchanged."""
     host = urlsplit(url).hostname or ""
-    if not (_RELAY and _RELAY_KEY and any(h in host for h in _RELAY_HOSTS)):
+    if not (_RELAY and _RELAY_KEY and any(host == h or host.endswith(f".{h}") for h in _RELAY_HOSTS)):
         return url, headers
     return f"{_RELAY}/?url={quote(url, safe='')}", {**(headers or {}), "X-Relay-Key": _RELAY_KEY}
 

@@ -33,7 +33,7 @@ than its expected interval.
 | `bbs_gdp` | BBS GDP release page and annual GDP workbook | `gdp.*` | daily 07:40 |
 | `bbs_census` | BBS Population & Housing Census 2022: one workbook per district | District series and `regional.census.subdistrict.*` | Sunday 03:20 |
 | `dse_market` | Dhaka Stock Exchange live snapshot, daily archive and instrument list | `market.dse.*`, `dse_indices`, `dse_prices`, `dse_securities` | Sun–Thu 16:30 |
-| `epb_exports` | EPB goods summary and country-wise workbooks selected by fiscal period | Product lines, destination totals, and HS chapter by destination | daily 08:10 |
+| `epb_exports` | EPB goods summary and country-wise workbooks selected by fiscal period | Product lines, destination totals, and HS chapters and headings by destination | daily 08:10 |
 | `tcb_prices` | TCB daily Dhaka retail-price workbook (essential commodities) | `prices.tcb.*` | daily 08:40 |
 | `derive_indicators` | Derived layer from official inputs (real call-money rate, real M2 growth, remittance growth, BDT depreciation) | `derived.*` | daily 10:00 |
 
@@ -61,6 +61,10 @@ input for the one-off census import). Use `census_limit` to trial a smaller set 
 workbooks before importing the full archive. Set `jobs` to a comma-separated subset for a
 targeted refresh. With `backfill` enabled, EPB and CPI process the recent releases
 listed on their publisher pages in period order.
+
+The workflow reaches BBS, EPB, DAM and BTRC release pages through an authenticated
+Cloudflare Worker. Publisher files linked on separate storage hosts are downloaded
+directly. Workstations fetch directly when no relay is configured.
 
 A manager timeout inside `amc_nav` is a **partial source failure**: the job skips that
 manager, records the remaining count in `funds.amc_nav.managers`, and still succeeds. If

@@ -32,7 +32,9 @@ Open work, roughly in priority order.
    Abdul Monem, AIBL AMC, DBH AMC and NCCBL AMC — their sites either have no public NAV
    table or publish only a prospectus. Add adapters as those managers publish.
 10. **Trade by HS product and partner.** EPB provides fiscal-year-to-date exports by
-    destination and HS chapter. Imports and finer HS detail still need separate sources.
+    destination at HS chapter and heading level. The EPB workbook also includes six-
+    and eight-digit tables. Publishing those requires a separate write-budget plan.
+    Partner-level imports still need a separate source.
 11. **Census geography.** The district workbooks now support separate upazila and thana
     totals. Add unions and wards after validating their codes across release layouts.
 12. **Vintage backfill.** The trigger and `?vintage=` work; TCB reprints give one year of
