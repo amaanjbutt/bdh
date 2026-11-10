@@ -49,6 +49,10 @@ Anonymous access is limited to public catalog and status endpoints.
 | GET | `/v1/usage` | Your usage (key required) |
 | POST | `/v1/webhooks` | Register a signed webhook (paid plans) |
 
+In `/v1/status`, a module's `last_date` is its latest observation across all series.
+`freshness_date` is the latest observation at the module's most common frequency.
+The API uses that date and frequency to calculate `age_days` and `state`.
+
 ## Transforms
 
 `?transform=yoy|mom|pct_change|3ma|index` applies a server-side transformation to the returned

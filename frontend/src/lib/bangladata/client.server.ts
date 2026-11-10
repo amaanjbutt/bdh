@@ -488,6 +488,7 @@ export async function fetchLatest(
 interface BackendStatusModule {
   module: string;
   last_date: string | null;
+  freshness_date?: string | null;
   series_count: number;
   observation_count: number;
   frequency?: string | null;
@@ -527,7 +528,7 @@ export async function fetchStatus(): Promise<StatusResponse> {
       const slug = toFrontendModule(m.module);
       const def = MODULE_BY_SLUG[slug];
       const shell = fbByModule[slug];
-      const last = m.last_date;
+      const last = m.freshness_date ?? m.last_date;
       return {
         module: slug,
         name: def?.name ?? shell?.name ?? slug,

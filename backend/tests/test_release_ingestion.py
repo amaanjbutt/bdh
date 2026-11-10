@@ -61,6 +61,27 @@ def test_bb_current_issue_uses_unquoted_relative_link(monkeypatch):
     )
 
 
+def test_bb_industry_archive_limits_months():
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Table VI"
+    sheet["A3"] = "Period"
+    sheet["B3"] = "Sugar"
+    sheet["B4"] = "Metric Tons"
+    sheet.append(["2021-22", None])
+    # Table VI of the April 2022 issue preserved by the Wayback Machine.
+    sheet.append(["December", 6600])
+    sheet.append(["January", 12735])
+    sheet.append(["February", 2041])
+    f = workbook_file(workbook, "bb_industry_archive_2022-01-01_2022-02-01.xlsx", date(2022, 4, 30))
+
+    rows = bb_workbook.BbWorkbookJob().parse(f)
+    assert [(r.series_id, r.obs_date, r.value) for r in rows] == [
+        ("industry.production.sugar_metric_tons", date(2022, 1, 1), 12735),
+        ("industry.production.sugar_metric_tons", date(2022, 2, 1), 2041),
+    ]
+
+
 def test_epb_discovery_orders_by_fiscal_period():
     def release(month, path):
         return f"""<tr><td data-column="export_data_year">২০২৫-২০২৬</td>

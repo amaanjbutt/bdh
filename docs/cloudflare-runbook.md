@@ -219,13 +219,20 @@ GitHub fetches BBS, EPB, DAM and BTRC release pages through the
 the permitted public publisher paths on each redirect.
 
 If the runner cannot reach a public publisher, a manual run can replay verified
-files for `bbs_cpi`, `epb_exports`, `dam_prices`, or `bbs_census`. Put a ZIP in the
+files for `bbs_cpi`, `epb_exports`, `dam_prices`, `bbs_census`, or the industrial
+table of `bb_workbook`. Put a ZIP in the
 private bucket at `raw/manual/<sha256>.zip` and pass its SHA-256 as
 `staged_release` with explicit `jobs`. The ZIP contains a root `manifest.json`
 mapping job names to lists of `{"filename": "...", "when": "YYYY-MM-DD"}`
 entries, and each file lives at `<job>/<filename>` inside the ZIP. Keep the normal
 ingestion filenames and publisher dates. The runner verifies the bundle hash and
 archives each source file before parsing.
+
+For a verified Bangladesh Bank Monthly Economic Trends archive, name the workbook
+`bb_industry_archive_<first-month>_<last-month>.xlsx` using the first day of each
+month as `YYYY-MM-01`. Use the archive's issue date for `when`. This selects only
+known industrial production series within the named window. Compare the window
+with live coverage before replaying an older issue.
 
 When the operator's Cloudflare login cannot access the ingestion bucket, first
 dispatch with `staged_release` and an ephemeral Base64 DER RSA `staging_public_key`.

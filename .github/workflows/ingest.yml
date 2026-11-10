@@ -41,7 +41,7 @@ on:
         default: false
 
 concurrency:
-  group: ingest
+  group: ${{ inputs.staging_public_key != '' && format('ingest-stage-{0}', github.run_id) || 'ingest' }}
   cancel-in-progress: false
 
 permissions:
