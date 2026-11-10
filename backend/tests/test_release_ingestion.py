@@ -176,6 +176,9 @@ def test_epb_country_totals_chapters_and_headings_use_usd_millions(monkeypatch):
     headings["C5"] = "USD"
     headings.append(["US: United States", None, None])
     headings.append([None, "6109: T-shirts, singlets and other vests", "277,764,924.01"])
+    # The October 2026 workbook supplies the code without the destination name.
+    headings.append(["ME: ", None, 8750.11])
+    headings.append([None, "6302: Bed linen, table linen, toilet linen and kitchen linen", 8750.11])
     monkeypatch.setattr(epb_exports, "ensure_series", Mock())
     when = date(2026, 10, 31)
     rows = epb_exports.EpbExportsJob().parse(workbook_file(workbook, "epb_destinations_oct.xlsx", when))
@@ -183,6 +186,7 @@ def test_epb_country_totals_chapters_and_headings_use_usd_millions(monkeypatch):
         ("trade.exports.country.ytd", when, "AE", 141.77382364),
         ("trade.exports.hs2.03.ytd", when, "AE", 0.31905911),
         ("trade.exports.hs4.6109.ytd", when, "US", 277.76492401),
+        ("trade.exports.hs4.6302.ytd", when, "ME", 0.00875011),
     ]
 
 
