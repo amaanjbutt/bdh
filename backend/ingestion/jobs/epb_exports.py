@@ -24,7 +24,7 @@ _BN_MONTHS = {
     "আগস্ট": 8, "অগস্ট": 8, "সেপ্টেম্বর": 9, "অক্টোবর": 10,
     "নভেম্বর": 11, "ডিসেম্বর": 12,
 }
-_COUNTRY = re.compile(r"^([A-Z]{2}):\s*\S")
+_COUNTRY = re.compile(r"^([A-Z]{2}):")
 _PRODUCT = re.compile(r"^(\d{2}|\d{4}):\s*(.+)$")
 
 
@@ -189,7 +189,7 @@ class EpbExportsJob(IngestionJob):
                                     "EPB goods exports by destination, USD million.", dims)}
         out: list[Record] = []
         for label, raw in summary.iter_rows(min_row=7, max_col=2, values_only=True):
-            country = _COUNTRY.match(clean_label(label))
+            country = _COUNTRY.match(str(label or "").lstrip())
             value = _num(raw)
             if country and value is not None:
                 out.append(Record(total_id, expected, value / 1_000_000, {"country": country[1]}))
@@ -200,7 +200,7 @@ class EpbExportsJob(IngestionJob):
             start = len(out)
             for label, product, raw in sheet.iter_rows(min_row=6, max_col=3, values_only=True):
                 if label:
-                    country = _COUNTRY.match(clean_label(label))
+                    country = _COUNTRY.match(str(label).lstrip())
                 product = _PRODUCT.match(clean_label(product))
                 value = _num(raw)
                 if not country or not product or len(product[1]) != digits or value is None:
