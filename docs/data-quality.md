@@ -19,6 +19,12 @@ against the publisher's own totals fails.
 
 ## Source-specific checks
 
+### EPB trade workbooks
+
+- The goods summary repeats residual labels under different product categories.
+  New observations scope each residual to its parent category. Historical
+  unscoped IDs remain available for existing clients.
+
 ### Bangladesh Bank workbooks
 
 - The current workbook comes from the Monthly Economic Trends issue archive. The

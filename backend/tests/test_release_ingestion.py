@@ -138,6 +138,27 @@ def test_epb_june_summary_uses_full_year_and_shifted_monthly_columns(monkeypatch
     assert values["monthly", date(2025, 6, 30)] == 93.13
 
 
+def test_epb_other_product_rows_keep_their_parent_category(monkeypatch):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet["A2"] = "Report: Summary Sheet"
+    sheet["A3"] = "Period: July-June  2025-2026"
+    for _ in range(4):
+        sheet.append([])
+    # EPB June 2026 repeats this residual label in distinct categories.
+    sheet.append(["(1) Frozen And Live Fish ( 01-03)", 443.42])
+    sheet.append(["e) Others", 17.23])
+    sheet.append(["(27) Other mfd Products (90-98)", 604.89])
+    sheet.append(["e) Others", 432.67])
+    monkeypatch.setattr(epb_exports, "ensure_series", Mock())
+    when = date(2026, 6, 30)
+    rows = epb_exports.EpbExportsJob().parse(workbook_file(workbook, "epb_summary_june.xlsx", when))
+    values = {row.series_id: row.value for row in rows}
+    assert values["trade.exports.frozen_and_live_fish_01_03.other.ytd"] == 17.23
+    assert values["trade.exports.other_mfd_products_90_98.other.ytd"] == 432.67
+    assert "trade.exports.e_others.ytd" not in values
+
+
 def test_epb_country_totals_chapters_and_headings_use_usd_millions(monkeypatch):
     workbook = Workbook()
     summary = workbook.active

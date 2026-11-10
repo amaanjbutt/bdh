@@ -14,6 +14,8 @@ services, income and transfers. The EPB publishes a more granular product table 
 
 - `external.exports`, `external.imports`, `external.trade_balance` — BOP totals in BDT crore
 - `trade.exports.*` — EPB goods exports by product line, USD million
+- `trade.exports.frozen_and_live_fish_01_03.other.ytd` — an example of a category-specific
+  “Other” line from the EPB summary sheet
 - `trade.exports.country.ytd` — fiscal-year-to-date EPB goods exports by destination
 - `trade.exports.hs2.61.ytd` — example HS chapter, with `?dims=country:US` for a destination
 - `trade.exports.hs4.6109.ytd` — example four-digit HS heading (knitted or crocheted T-shirts,

@@ -137,14 +137,24 @@ class EpbExportsJob(IngestionJob):
                        (5, ".monthly", when), (6, ".monthly", prev_month), (8, ".monthly", prev_year)]
         out: list[Record] = []
         catalog: dict[str, dict] = {}
+        category = ""
         for row in sheet.iter_rows(min_row=7, max_col=max(c for c, _, _ in columns) + 1, values_only=True):
             label = clean_label(row[0])
-            if not label or label.lower().startswith("all products") or label.lower() == "products" or label.isdigit():
+            if (not label or label.startswith("*") or label.lower().startswith("all products")
+                    or label.lower() == "products" or label.isdigit()):
                 continue
             display = re.sub(r"^(?:(?:[A-Z]\.|\(\d+\)|[a-z]\)|[IVX]+\.)\s*){1,3}", "", label).strip()
             if not display:
                 continue
             slug = slugify(label)
+            description = label
+            if re.match(r"^(?:[A-Z]\.|\(\d+\))\s*", label):
+                category = display
+            if display.lower() in {"other", "others"} and category:
+                # EPB repeats labels such as "e) Others" under unrelated categories.
+                slug = f"{slugify(category)}.other"
+                display = f"{category} — other"
+                description = f"{category} — {label}"
             for col, suffix, obs_date in columns:
                 value = _num(row[col])
                 if value is None:
@@ -153,7 +163,7 @@ class EpbExportsJob(IngestionJob):
                 if sid not in catalog:
                     qualifier = {".ytd": "FY-to-date", ".monthly": "monthly", "": "full fiscal year"}[suffix]
                     catalog[sid] = _series(sid, f"Exports — {display} ({qualifier})",
-                                           f"EPB goods exports: {label} ({qualifier}), USD million.", {})
+                                           f"EPB goods exports: {description} ({qualifier}), USD million.", {})
                 out.append(Record(sid, obs_date, value))
         if not out:
             raise ValueError("EPB product summary contained no observations")
