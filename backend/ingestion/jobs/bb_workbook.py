@@ -109,22 +109,35 @@ class BbWorkbookJob(IngestionJob):
         return files
 
     def parse(self, f: FetchedFile) -> list[Record]:
+        archive_period = None
+        if f.filename.startswith("bb_industry_archive_"):
+            match = re.fullmatch(r"bb_industry_archive_(\d{4}-\d{2}-01)_(\d{4}-\d{2}-01)\.xlsx", f.filename)
+            if match is None:
+                raise ValueError("Expected the first and last months in the BB archive filename")
+            first, last = map(date.fromisoformat, match.groups())
+            if not first <= last <= f.when:
+                raise ValueError("Invalid industrial archive month range")
+            archive_period = (first, last)
+
         if f.filename.startswith("bb_historical"):
             _, recs = bb_tables.parse_workbook_bytes(f.content, bb_tables.HISTORICAL_SPECS)
-        elif f.filename == "bb_latest.xlsx":
+        elif f.filename == "bb_latest.xlsx" or archive_period is not None:
             industry = next(spec for spec in bb_tables.CURRENT_SPECS if spec.sheet == "Table VI")
             # The current issue moved and reorganised several tables. Only use
             # the verified industrial layout from it. bb_web owns live macro IDs.
             _, recs = bb_tables.parse_workbook_bytes(f.content, [industry, replace(industry, sheet="Table VIA")])
+            if archive_period is not None:
+                first, last = archive_period
+                recs = [r for r in recs if first <= r["obs_date"] <= last and r["obs_date"].day == 1]
             if not recs:
-                raise ValueError("Latest Bangladesh Bank workbook has no industrial production observations")
+                raise ValueError("Bangladesh Bank workbook has no industrial production observations in range")
         else:
             _, recs = bb_tables.parse_workbook_bytes(f.content, bb_tables.CURRENT_SPECS)
         units = _target_units()
         out = []
         for r in recs:
             fid = r["series_id"]
-            if f.filename == "bb_latest.xlsx" and fid not in units:
+            if (f.filename == "bb_latest.xlsx" or archive_period is not None) and fid not in units:
                 continue
             factor = _factor(r.get("unit", ""), units.get(fid, ""))
             value = r["value"] * factor if r["value"] is not None else None

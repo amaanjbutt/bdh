@@ -10,7 +10,7 @@ from zipfile import ZipFile
 from ingestion.framework import FetchedFile
 from ingestion.registry import JOBS
 
-REPLAYABLE = ("bbs_census", "bbs_cpi", "dam_prices", "epb_exports")
+REPLAYABLE = ("bb_workbook", "bbs_census", "bbs_cpi", "dam_prices", "epb_exports")
 
 
 def read_files(bundle: ZipFile, job: str) -> list[FetchedFile]:
@@ -23,6 +23,8 @@ def read_files(bundle: ZipFile, job: str) -> list[FetchedFile]:
         path = PurePosixPath(filename)
         if filename != path.name or "\\" in filename or path.suffix not in {".xlsx", ".pdf"}:
             raise ValueError("Invalid staged release filename")
+        if job == "bb_workbook" and not filename.startswith("bb_industry_archive_"):
+            raise ValueError("Only verified Bangladesh Bank industrial archive workbooks can be replayed")
         if when > date.today() or filename in seen:
             raise ValueError("Future-dated or duplicate staged release")
         seen.add(filename)

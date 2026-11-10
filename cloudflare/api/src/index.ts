@@ -606,15 +606,24 @@ async function catalogList(env: Env, url: URL): Promise<Response> {
 }
 
 async function status(env: Env): Promise<Response> {
-  const [moduleRows, freqRows, totals, dse, dam, funds, auctions, jobs] = await Promise.all([
+  const [moduleRows, totals, dse, dam, funds, auctions, jobs] = await Promise.all([
     env.DB.prepare(
-      `SELECT s.module, count(DISTINCT s.id) AS series_count, count(o.series_id) AS observation_count,
-              min(o.obs_date) AS first_date, max(o.obs_date) AS last_date
-         FROM series s LEFT JOIN observations o ON o.series_id = s.id
-        WHERE s.is_active = 1 GROUP BY s.module`,
-    ).all<Row>(),
-    env.DB.prepare(
-      `SELECT module, frequency, count(*) AS c FROM series WHERE is_active = 1 GROUP BY module, frequency`,
+      `WITH coverage AS (
+         SELECT s.module, s.frequency, count(DISTINCT s.id) AS series_count,
+                count(o.series_id) AS observation_count, min(o.obs_date) AS first_date,
+                max(o.obs_date) AS last_date
+           FROM series s LEFT JOIN observations o ON o.series_id = s.id
+          WHERE s.is_active = 1 GROUP BY s.module, s.frequency
+       ), ranked AS (
+         SELECT module, frequency, last_date AS freshness_date,
+                sum(series_count) OVER (PARTITION BY module) AS series_count,
+                sum(observation_count) OVER (PARTITION BY module) AS observation_count,
+                min(first_date) OVER (PARTITION BY module) AS first_date,
+                max(last_date) OVER (PARTITION BY module) AS last_date,
+                row_number() OVER (PARTITION BY module ORDER BY series_count DESC, frequency) AS rank
+           FROM coverage
+       )
+       SELECT * FROM ranked WHERE rank = 1 ORDER BY module`,
     ).all<Row>(),
     env.DB.prepare(
       `SELECT (SELECT count(*) FROM series WHERE is_active = 1) AS series,
@@ -640,21 +649,17 @@ async function status(env: Env): Promise<Response> {
     ).all<Row>(),
   ]);
 
-  const dominant = new Map<string, string>();
-  for (const r of freqRows.results || []) {
-    const cur = dominant.get(r.module);
-    if (!cur) dominant.set(r.module, r.frequency);
-  }
   const modules = (moduleRows.results || []).map((r) => {
-    const freq = dominant.get(r.module) || "irregular";
+    const freq = r.frequency || "irregular";
     return {
       module: r.module,
       series_count: Number(r.series_count || 0),
       observation_count: Number(r.observation_count || 0),
       first_date: r.first_date,
       last_date: r.last_date,
+      freshness_date: r.freshness_date,
       frequency: freq,
-      ...freshness(r.last_date, freq),
+      ...freshness(r.freshness_date, freq),
     };
   });
 

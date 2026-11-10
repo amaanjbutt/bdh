@@ -26,6 +26,10 @@ against the publisher's own totals fails.
   are reported separately from the availability of the historical workbook.
 - Table VIA in the current issue continues the industrial production columns
   previously found in Table VI.
+- The [December 2021](https://web.archive.org/web/20220619203946id_/https://www.bb.org.bd/pub/monthly/econtrds/dec21/statisticaltable.xlsx)
+  and [April 2022](https://web.archive.org/web/20220619203934id_/https://www.bb.org.bd/pub/monthly/econtrds/econtrends_apr2022.xlsx)
+  captures retain the original industrial commodity table, including its physical units.
+  The bounded replay uses September 2021 through February 2022, oldest issue first.
 - The 1972–2024 historical workbook is parsed separately and is the source for long annual
   series.
 - Wide tables have merged headers; `bb_tables.py` expands merged cells and strips numeric
