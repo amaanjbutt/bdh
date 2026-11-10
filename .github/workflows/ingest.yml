@@ -75,6 +75,9 @@ jobs:
       R2_REGION: ${{ secrets.R2_REGION }}
       D1_SYNC_URL: ${{ secrets.D1_SYNC_URL }}
       D1_SYNC_TOKEN: ${{ secrets.D1_SYNC_TOKEN }}
+      FETCH_RELAY_URL: ${{ vars.FETCH_RELAY_URL }}
+      FETCH_RELAY_KEY: ${{ secrets.FETCH_RELAY_KEY }}
+      FETCH_RELAY_HOSTS: bbs.gov.bd,epb.gov.bd,dam.gov.bd,btrc.gov.bd
     defaults:
       run:
         working-directory: backend

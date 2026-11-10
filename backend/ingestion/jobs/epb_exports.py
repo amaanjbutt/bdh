@@ -1,4 +1,4 @@
-"""EPB goods exports by product, destination, and HS chapter × destination."""
+"""EPB goods exports by product, destination, and HS chapter or heading."""
 from __future__ import annotations
 
 import io
@@ -25,7 +25,7 @@ _BN_MONTHS = {
     "নভেম্বর": 11, "ডিসেম্বর": 12,
 }
 _COUNTRY = re.compile(r"^([A-Z]{2}):\s*\S")
-_CHAPTER = re.compile(r"^(\d{2}):\s*(.+)$")
+_PRODUCT = re.compile(r"^(\d{2}|\d{4}):\s*(.+)$")
 
 
 def _month_end(year: int, month: int) -> date:
@@ -66,7 +66,7 @@ def _releases(html: str) -> dict[date, dict[str, str]]:
             if not urlsplit(url).path.lower().endswith(".xlsx"):
                 continue
             title = link["title"].lower()
-            if "summary sheet" in title:
+            if "summary sheet" in title and "service" not in title:
                 releases.setdefault(when, {})["summary"] = url
             elif re.search(r"country[- ]wise export\s*\(goods\)", title):
                 releases.setdefault(when, {})["destinations"] = url
@@ -107,7 +107,11 @@ class EpbExportsJob(IngestionJob):
         try:
             if f.filename.startswith("epb_destinations_"):
                 return self._parse_destinations(wb, f.when)
-            return self._parse_summary(wb.worksheets[0], f.when if f.filename.startswith("epb_summary_") else None)
+            summaries = [sheet for sheet in wb.worksheets
+                         if "summary sheet" in clean_label(sheet["A2"].value).lower()]
+            if len(summaries) != 1:
+                raise ValueError("Expected one EPB product summary sheet")
+            return self._parse_summary(summaries[0], f.when if f.filename.startswith("epb_summary_") else None)
         finally:
             wb.close()
 
@@ -116,20 +120,21 @@ class EpbExportsJob(IngestionJob):
         start, when = _workbook_period(sheet)
         if expected is not None and expected != when:
             raise ValueError(f"EPB summary covers {when}, expected {expected}")
-        if "summary sheet" not in clean_label(sheet["A2"].value).lower():
-            raise ValueError("Expected the EPB product summary sheet")
-
         prev_year = _month_end(when.year - 1, when.month)
         prev_month = _month_end(when.year - (when.month == 1), (when.month - 2) % 12 + 1)
         full_fy = date(start, 6, 30)
-        columns = [(1, "", full_fy)]
         if when.month == 7:
             # July is both the latest month and the whole year to date.
-            columns += [(2, ".ytd", when), (5, ".ytd", prev_year),
-                        (2, ".monthly", when), (3, ".monthly", prev_month), (5, ".monthly", prev_year)]
+            columns = [(1, "", full_fy), (2, ".ytd", when), (5, ".ytd", prev_year),
+                       (2, ".monthly", when), (3, ".monthly", prev_month), (5, ".monthly", prev_year)]
+        elif when.month == 6:
+            # In June the two YTD columns are full fiscal years. The standalone
+            # previous-FY column disappears, shifting the monthly columns left.
+            columns = [(1, "", when), (2, "", prev_year), (1, ".ytd", when), (2, ".ytd", prev_year),
+                       (4, ".monthly", when), (5, ".monthly", prev_month), (7, ".monthly", prev_year)]
         else:
-            columns += [(2, ".ytd", when), (3, ".ytd", prev_year),
-                        (5, ".monthly", when), (6, ".monthly", prev_month), (8, ".monthly", prev_year)]
+            columns = [(1, "", full_fy), (2, ".ytd", when), (3, ".ytd", prev_year),
+                       (5, ".monthly", when), (6, ".monthly", prev_month), (8, ".monthly", prev_year)]
         out: list[Record] = []
         catalog: dict[str, dict] = {}
         for row in sheet.iter_rows(min_row=7, max_col=max(c for c, _, _ in columns) + 1, values_only=True):
@@ -157,12 +162,16 @@ class EpbExportsJob(IngestionJob):
 
     @staticmethod
     def _parse_destinations(wb, expected: date) -> list[Record]:
-        summary, chapters = wb["Country Summary"], wb["2 Digit"]
-        for sheet in (summary, chapters):
+        sheets = {name.lower().strip(): wb[name] for name in wb.sheetnames}
+        summary = sheets["country summary"]
+        levels = [(2, "chapter", sheets["2 digit"])]
+        if "4 digit" in sheets:
+            levels.append((4, "heading", sheets["4 digit"]))
+        for sheet in (summary, *(sheet for _, _, sheet in levels)):
             _, when = _workbook_period(sheet)
             if when != expected:
                 raise ValueError(f"EPB {sheet.title} covers {when}, expected {expected}")
-        if summary["B6"].value != "USD" or chapters["C5"].value != "USD":
+        if summary["B6"].value != "USD" or any(sheet["C5"].value != "USD" for _, _, sheet in levels):
             raise ValueError("Expected EPB destination tables in USD")
         total_id = "trade.exports.country.ytd"
         dims = {"country": "EPB destination code"}
@@ -174,22 +183,28 @@ class EpbExportsJob(IngestionJob):
             value = _num(raw)
             if country and value is not None:
                 out.append(Record(total_id, expected, value / 1_000_000, {"country": country[1]}))
-        totals_count = len(out)
-        country = None
-        for label, product, raw in chapters.iter_rows(min_row=6, max_col=3, values_only=True):
-            if label:
-                country = _COUNTRY.match(clean_label(label))
-            chapter = _CHAPTER.match(clean_label(product))
-            value = _num(raw)
-            if not country or not chapter or value is None:
-                continue
-            sid = f"trade.exports.hs2.{chapter[1]}.ytd"
-            if sid not in catalog:
-                catalog[sid] = _series(sid, f"Exports HS {chapter[1]} — {chapter[2]} (FY-to-date)",
-                                       "EPB goods exports by HS chapter and destination, USD million.", dims)
-            out.append(Record(sid, expected, value / 1_000_000, {"country": country[1]}))
-        if not totals_count or len(out) == totals_count:
-            raise ValueError("EPB destination or chapter table contained no observations")
+        if not out:
+            raise ValueError("EPB destination table contained no observations")
+        for digits, level, sheet in levels:
+            country = None
+            start = len(out)
+            for label, product, raw in sheet.iter_rows(min_row=6, max_col=3, values_only=True):
+                if label:
+                    country = _COUNTRY.match(clean_label(label))
+                product = _PRODUCT.match(clean_label(product))
+                value = _num(raw)
+                if not country or not product or len(product[1]) != digits or value is None:
+                    continue
+                code, name = product.groups()
+                sid = f"trade.exports.hs{digits}.{code}.ytd"
+                if sid not in catalog:
+                    catalog[sid] = _series(
+                        sid, f"Exports HS {code} — {name} (FY-to-date)",
+                        f"EPB goods exports by HS {level} and destination, USD million.", dims,
+                    )
+                out.append(Record(sid, expected, value / 1_000_000, {"country": country[1]}))
+            if len(out) == start:
+                raise ValueError(f"EPB HS{digits} table contained no observations")
         ensure_series(list(catalog.values()))
         return out
 

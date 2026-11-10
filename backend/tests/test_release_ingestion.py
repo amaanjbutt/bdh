@@ -38,6 +38,20 @@ def test_release_download_retries_timeout(monkeypatch):
     assert get.call_count == 2
 
 
+def test_publisher_relay_matches_host_boundaries(monkeypatch):
+    monkeypatch.setattr(http_client, "_RELAY", "https://relay.example.test")
+    monkeypatch.setattr(http_client, "_RELAY_KEY", "test")
+    monkeypatch.setattr(http_client, "_RELAY_HOSTS", ["bbs.gov.bd"])
+
+    url = "https://bbs.gov.bd/pages/static-pages/cpi"
+    assert http_client.relayed(url) == (
+        "https://relay.example.test/?url=https%3A%2F%2Fbbs.gov.bd%2Fpages%2Fstatic-pages%2Fcpi",
+        {"X-Relay-Key": "test"},
+    )
+    outside = "https://bbs.gov.bd.example.test/report"
+    assert http_client.relayed(outside) == (outside, None)
+
+
 def test_bb_current_issue_uses_unquoted_relative_link(monkeypatch):
     html = """<a href=../../../../../../pub/monthly/econtrds/etoct26.xlsx>Download</a>
         <a href=../../../../../../pub/monthly/econtrds/etsep26.xlsx>Download</a>"""
@@ -51,7 +65,8 @@ def test_epb_discovery_orders_by_fiscal_period():
     def release(month, path):
         return f"""<tr><td data-column="export_data_year">২০২৫-২০২৬</td>
             <td data-column="epb_export_data_month">জুলাই{month}</td>
-            <td><a href="/{path}.xlsx" title="Monthly Summary Sheet">Summary</a></td></tr>"""
+            <td><a href="/{path}.xlsx" title="Monthly Summary Sheet">Summary</a>
+            <a href="/service.xlsx" title="Service Summary Sheet">Service</a></td></tr>"""
 
     html = "<table>" + release("", "jul") + release("-ফেব্রুয়ারি", "feb") + "</table>"
     releases = epb_exports._releases(html)
@@ -81,7 +96,28 @@ def test_epb_july_template_and_previous_fiscal_year(monkeypatch):
     assert epb_exports._workbook_period(sheet) == (2025, date(2026, 1, 31))
 
 
-def test_epb_country_totals_and_hs_chapters_use_usd_millions(monkeypatch):
+def test_epb_june_summary_uses_full_year_and_shifted_monthly_columns(monkeypatch):
+    workbook = Workbook()
+    sheet = workbook.create_sheet("Worksheet 1")
+    sheet["A2"] = "Report: Summary Sheet"
+    sheet["A3"] = "Period: July-June  2025-2026"
+    # EPB June 2026, row 8 (first product aggregate).
+    for _ in range(4):
+        sheet.append([])
+    sheet.append(["A. Primary Commodities ( 1-24)", 1443.88, 1448.52,
+                  -0.32032695, 123.37, 98.24, 25.58021173, 93.13])
+    monkeypatch.setattr(epb_exports, "ensure_series", Mock())
+    when = date(2026, 6, 30)
+    rows = epb_exports.EpbExportsJob().parse(workbook_file(workbook, "epb_summary_june.xlsx", when))
+    values = {(row.series_id.rsplit(".", 1)[-1], row.obs_date): row.value for row in rows}
+    assert values["a_primary_commodities_1_24", when] == values["ytd", when] == 1443.88
+    assert values["ytd", date(2025, 6, 30)] == 1448.52
+    assert values["monthly", when] == 123.37
+    assert values["monthly", date(2026, 5, 31)] == 98.24
+    assert values["monthly", date(2025, 6, 30)] == 93.13
+
+
+def test_epb_country_totals_chapters_and_headings_use_usd_millions(monkeypatch):
     workbook = Workbook()
     summary = workbook.active
     summary.title = "Country Summary"
@@ -93,12 +129,18 @@ def test_epb_country_totals_and_hs_chapters_use_usd_millions(monkeypatch):
     chapters["C5"] = "USD"
     chapters.append(["AE: United Arab Emirates", None, 141773823.64])
     chapters.append([None, "03: Fish and crustaceans", 319059.11])
+    headings = workbook.create_sheet("4 digit")
+    headings["A3"] = "Period: July-October 2026-27"
+    headings["C5"] = "USD"
+    headings.append(["US: United States", None, None])
+    headings.append([None, "6109: T-shirts, singlets and other vests", "277,764,924.01"])
     monkeypatch.setattr(epb_exports, "ensure_series", Mock())
     when = date(2026, 10, 31)
     rows = epb_exports.EpbExportsJob().parse(workbook_file(workbook, "epb_destinations_oct.xlsx", when))
     assert [(r.series_id, r.obs_date, r.dims["country"], round(r.value, 8)) for r in rows] == [
         ("trade.exports.country.ytd", when, "AE", 141.77382364),
         ("trade.exports.hs2.03.ytd", when, "AE", 0.31905911),
+        ("trade.exports.hs4.6109.ytd", when, "US", 277.76492401),
     ]
 
 
